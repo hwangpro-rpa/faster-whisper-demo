@@ -2,4 +2,5 @@ fastapi
 uvicorn[standard]
 faster-whisper
 python-multipart
+python-dotenv
 # anthropic  # uncomment once ANTHROPIC_API_KEY is set up (switches grader automatically)

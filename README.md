@@ -27,9 +27,19 @@ python3.12 -m venv .venv
 
 ## 환경변수 (`.env.example` 참고)
 
+`app/main.py`가 시작할 때 `.env` 파일을 자동으로 읽습니다 (`python-dotenv`). 프로젝트 루트에
+`.env`를 만들면 됩니다 (`.gitignore`에 이미 포함되어 있어 커밋되지 않음):
+
+```bash
+cp .env.example .env
+```
+
 - `ANTHROPIC_API_KEY` — 설정하면 Claude 기반 채점으로 자동 전환.
-- `DEMO_TOKEN` — 설정하면 `/api/grade` 요청에 동일한 `token` 폼 필드가 없으면 401.
+- `DEMO_TOKEN` — 설정하면 `/api/grade` 요청에 동일한 `token`이 없으면 401.
   **외부에 공개할 때는 반드시 설정할 것** (안 그러면 아무나 CPU에 whisper job을 돌릴 수 있음).
+  프론트엔드는 URL에 `?token=값`을 한 번 붙여서 열면 그 값을 브라우저 localStorage에 저장해두고
+  이후 모든 요청에 자동으로 실어 보냅니다 — 즉 터널 URL을
+  `https://xxxx.trycloudflare.com/?token=값` 형태로 공유하면 됨.
 - `WHISPER_MODEL_SIZE` — `tiny`/`base`/`small`(기본)/`medium`. `medium`은 인식이 더 정확할 수 있지만
   4코어 i3 CPU 기준 짧은 문장 하나에 약 14초가 걸려 데모용으로는 느립니다. 속도보다 정확도가
   급하지 않다면 시도해볼 수 있는 정도.

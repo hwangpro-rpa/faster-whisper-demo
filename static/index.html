@@ -367,6 +367,19 @@
 <script>
 const API = "";
 const MAX_MS = 20000;
+const TOKEN_KEY = "voiceGraderToken";
+
+(function persistTokenFromUrl() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const t = params.get("token");
+    if (t) localStorage.setItem(TOKEN_KEY, t);
+  } catch (e) { /* localStorage unavailable, ignore */ }
+})();
+
+function getToken() {
+  try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; }
+}
 let items = [];
 let currentItem = null;
 let drawCount = 0;
@@ -541,6 +554,8 @@ async function onRecordingStop() {
   const form = new FormData();
   form.append("item_id", currentItem.id);
   form.append("audio", blob, `recording.${ext}`);
+  const token = getToken();
+  if (token) form.append("token", token);
 
   try {
     const res = await fetch(`${API}/api/grade`, { method: "POST", body: form });

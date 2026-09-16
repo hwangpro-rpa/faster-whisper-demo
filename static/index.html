@@ -267,6 +267,46 @@
   }
   .word.insert { background: linear-gradient(transparent 55%, var(--marker-yellow) 55%); }
 
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 12px 0 4px;
+    flex-wrap: wrap;
+  }
+  .score-stamp {
+    flex: none;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    border: 3px solid var(--pen-red);
+    border-radius: 50%;
+    transform: rotate(-8deg);
+    color: var(--pen-red);
+    font-family: "Gaegu", sans-serif;
+  }
+  .score-stamp .num { font-size: 24px; font-weight: 700; line-height: 1; }
+  .score-stamp .unit { font-size: 10.5px; margin-top: 1px; }
+  .score-chips {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 160px;
+  }
+  .score-chip {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--paper-edge);
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+  .score-chip b { color: var(--ink); font-weight: 700; }
+
   .verdict {
     display: inline-flex;
     align-items: center;
@@ -353,6 +393,10 @@
     <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
     <div class="result-label">✎ 인식된 소리</div>
     <div class="recognized" id="recognizedText"></div>
+    <div class="score-row">
+      <div class="score-stamp"><span class="num" id="scoreOverall">–</span><span class="unit">점</span></div>
+      <div class="score-chips" id="scoreChips"></div>
+    </div>
     <div class="verdict" id="verdict"></div>
     <div class="note" id="noteBox"><span class="feedback" id="feedback"></span></div>
     <audio id="playback" controls></audio>
@@ -575,6 +619,18 @@ function showResult(data) {
     const text = op.recognized || `[ ${op.target} ]`;
     return `<span class="word ${op.op}">${escapeHtml(text)}</span>`;
   }).join(" ") || "<em>(인식된 내용 없음)</em>";
+
+  const s = data.scores;
+  el("scoreOverall").textContent = s.overall;
+  const chips = [
+    ["정확도", s.accuracy],
+    ["완성도", s.completeness],
+    ["유창성", s.fluency],
+    ["문자유사도", s.char_similarity],
+  ].filter(([, v]) => v !== null && v !== undefined);
+  el("scoreChips").innerHTML = chips
+    .map(([label, v]) => `<span class="score-chip">${label} <b>${v}%</b></span>`)
+    .join("");
 
   const verdictEl = el("verdict");
   verdictEl.textContent = data.correct ? "참 잘했어요" : "다시 읽어볼까요";

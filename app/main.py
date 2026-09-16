@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 import tempfile
@@ -78,7 +79,7 @@ async def grade(
     try:
         assert model is not None
         audio_array = load_and_clean_audio(tmp_path)
-        segments, _info = model.transcribe(
+        segments, info = model.transcribe(
             audio_array,
             language=item.language,
             beam_size=5,
@@ -90,8 +91,10 @@ async def grade(
     finally:
         os.unlink(tmp_path)
 
+    speech_ratio = (info.duration_after_vad / info.duration) if info.duration > 0 else None
+
     grader = get_grader()
-    result = grader.grade(item.text, recognized_text, item.language)
+    result = grader.grade(item.text, recognized_text, item.language, speech_ratio=speech_ratio, level=item.level)
 
     return {
         "item_id": item.id,
@@ -101,6 +104,7 @@ async def grade(
         "diff_ops": result.diff_ops,
         "feedback": result.feedback,
         "grader": result.provider,
+        "scores": dataclasses.asdict(result.scores),
     }
 
 

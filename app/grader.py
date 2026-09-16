@@ -17,6 +17,16 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class Scores:
+    accuracy: int  # % of target words matched exactly
+    completeness: int  # % of the target actually read (vs. cut off early)
+    fluency: int | None  # % of the recording that was continuous speech; sentence items only
+    char_similarity: int  # character-level similarity, target vs. recognized (catches near-misses)
+    overall: int  # weighted: accuracy 60 / completeness 20 / fluency 20 (sentences),
+    # or accuracy 80 / completeness 20 (single words, where "fluency" doesn't mean anything)
+
+
+@dataclass
 class GradeResult:
     correct: bool
     target_words: list[str]
@@ -24,6 +34,45 @@ class GradeResult:
     diff_ops: list[dict]  # [{op, target, recognized}]
     feedback: str
     provider: str
+    scores: Scores
+
+
+def _compute_scores(
+    target_text: str,
+    recognized_text: str,
+    target_words: list[str],
+    recognized_words: list[str],
+    diff_ops: list[dict],
+    speech_ratio: float | None,
+    level: str,
+) -> Scores:
+    total = len(target_words)
+    matched = sum(1 for op in diff_ops if op["op"] == "equal")
+    accuracy = round(100 * matched / total) if total else 0
+    completeness = round(min(100, 100 * len(recognized_words) / total)) if total else 0
+
+    char_similarity = round(
+        difflib.SequenceMatcher(None, _normalize(target_text), _normalize(recognized_text)).ratio() * 100
+    )
+
+    # A single word has no "flow" to interrupt, so fluency (pause/hesitation
+    # detection) only means something for multi-word sentences.
+    if level == "sentence" and speech_ratio is not None:
+        fluency = round(max(0.0, min(1.0, speech_ratio)) * 100)
+        overall = accuracy * 0.6 + completeness * 0.2 + fluency * 0.2
+    else:
+        fluency = None
+        overall = accuracy * 0.8 + completeness * 0.2
+
+    overall = max(0, min(100, round(overall)))
+
+    return Scores(
+        accuracy=accuracy,
+        completeness=completeness,
+        fluency=fluency,
+        char_similarity=char_similarity,
+        overall=overall,
+    )
 
 
 # (pattern in target word, pattern in what was heard instead, note)
@@ -83,7 +132,14 @@ def _diff_ops(target_words: list[str], recognized_words: list[str]) -> list[dict
 class Grader:
     name = "base"
 
-    def grade(self, target_text: str, recognized_text: str, language: str) -> GradeResult:
+    def grade(
+        self,
+        target_text: str,
+        recognized_text: str,
+        language: str,
+        speech_ratio: float | None = None,
+        level: str = "sentence",
+    ) -> GradeResult:
         raise NotImplementedError
 
 
@@ -92,7 +148,14 @@ class HeuristicGrader(Grader):
 
     name = "heuristic"
 
-    def grade(self, target_text: str, recognized_text: str, language: str) -> GradeResult:
+    def grade(
+        self,
+        target_text: str,
+        recognized_text: str,
+        language: str,
+        speech_ratio: float | None = None,
+        level: str = "sentence",
+    ) -> GradeResult:
         target_words = _tokenize(target_text, language)
         recognized_words = _tokenize(recognized_text, language)
         ops = _diff_ops(target_words, recognized_words)
@@ -104,6 +167,10 @@ class HeuristicGrader(Grader):
         else:
             feedback = self._build_feedback(mismatches, language)
 
+        scores = _compute_scores(
+            target_text, recognized_text, target_words, recognized_words, ops, speech_ratio, level
+        )
+
         return GradeResult(
             correct=correct,
             target_words=target_words,
@@ -111,6 +178,7 @@ class HeuristicGrader(Grader):
             diff_ops=ops,
             feedback=feedback,
             provider=self.name,
+            scores=scores,
         )
 
     def _build_feedback(self, mismatches: list[dict], language: str) -> str:
@@ -162,7 +230,14 @@ class ClaudeGrader(Grader):
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
-    def grade(self, target_text: str, recognized_text: str, language: str) -> GradeResult:
+    def grade(
+        self,
+        target_text: str,
+        recognized_text: str,
+        language: str,
+        speech_ratio: float | None = None,
+        level: str = "sentence",
+    ) -> GradeResult:
         target_words = _tokenize(target_text, language)
         recognized_words = _tokenize(recognized_text, language)
         ops = _diff_ops(target_words, recognized_words)
@@ -185,6 +260,10 @@ class ClaudeGrader(Grader):
             block.text for block in response.content if getattr(block, "type", None) == "text"
         ).strip()
 
+        scores = _compute_scores(
+            target_text, recognized_text, target_words, recognized_words, ops, speech_ratio, level
+        )
+
         return GradeResult(
             correct=correct,
             target_words=target_words,
@@ -192,6 +271,7 @@ class ClaudeGrader(Grader):
             diff_ops=ops,
             feedback=feedback,
             provider=self.name,
+            scores=scores,
         )
 
 

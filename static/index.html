@@ -475,10 +475,20 @@ function pickMimeType() {
 async function beginHold() {
   if (recording) return;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 16000,
+      },
+    });
     chunks = [];
     const mimeType = pickMimeType();
-    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    const recorderOpts = { audioBitsPerSecond: 128000 };
+    if (mimeType) recorderOpts.mimeType = mimeType;
+    mediaRecorder = new MediaRecorder(stream, recorderOpts);
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     mediaRecorder.onstop = onRecordingStop;
     mediaRecorder.start();

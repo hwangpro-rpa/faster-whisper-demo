@@ -37,3 +37,11 @@ def get_item(item_id: str) -> Item | None:
         if item.id == item_id:
             return item
     return None
+
+
+def hotwords_for(language: str) -> str:
+    """All known target texts for this language, used as a decoding vocabulary
+    hint. Includes every item, not just the current one, so it biases Whisper
+    toward the demo's domain vocabulary without ever hinting the correct answer.
+    """
+    return " ".join(item.text for item in ITEMS if item.language == language)

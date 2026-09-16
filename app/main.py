@@ -9,8 +9,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from faster_whisper import WhisperModel
 
+from .audio_prep import load_and_clean_audio
 from .grader import get_grader
-from .items import get_item, get_items
+from .items import get_item, get_items, hotwords_for
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("voice-grader")
@@ -73,12 +74,14 @@ async def grade(
 
     try:
         assert model is not None
+        audio_array = load_and_clean_audio(tmp_path)
         segments, _info = model.transcribe(
-            tmp_path,
+            audio_array,
             language=item.language,
             beam_size=5,
             vad_filter=True,
             condition_on_previous_text=False,
+            hotwords=hotwords_for(item.language),
         )
         recognized_text = "".join(seg.text for seg in segments).strip()
     finally:

@@ -3,110 +3,289 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>발음 채점 데모</title>
+<title>말하기 연습장</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✏️</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #171a23;
-    --text: #e8e9ee;
-    --muted: #8b8fa3;
-    --accent: #6c8dff;
-    --good: #35c98f;
-    --bad: #ff6b6b;
-    --border: #2a2e3d;
+    --desk: #3d3226;
+    --desk-shadow: rgba(0,0,0,0.45);
+    --paper: #faf5e6;
+    --paper-edge: #efe6cf;
+    --rule: rgba(94,128,171,0.38);
+    --margin: #c8574a;
+    --pen-blue: #2c4a73;
+    --pen-blue-soft: #5872a1;
+    --pen-red: #b5432f;
+    --pen-green: #46693c;
+    --ink-muted: #8a8171;
+    --marker-yellow: rgba(255, 214, 92, 0.55);
+    --marker-green: rgba(150, 199, 128, 0.45);
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,255,255,0.06), transparent 60%),
+      repeating-linear-gradient(115deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 6px),
+      var(--desk);
+    color: var(--pen-blue);
+    font-family: "IBM Plex Sans KR", -apple-system, sans-serif;
     display: flex;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 40px 16px;
+    min-height: 100%;
   }
-  .app { width: 100%; max-width: 560px; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 16px;
+
+  .sheet {
+    width: 100%;
+    max-width: 620px;
+    background: var(--paper);
+    background-image:
+      linear-gradient(to right, transparent 0 54px, var(--margin) 54px 55.5px, transparent 55.5px),
+      repeating-linear-gradient(to bottom, transparent 0 37px, var(--rule) 37px 38px);
+    box-shadow: 0 24px 50px var(--desk-shadow), 0 2px 0 var(--paper-edge);
+    border-radius: 3px;
+    padding: 34px 30px 30px 74px;
+    transform: rotate(-0.4deg);
+    position: relative;
   }
-  .tag {
-    display: inline-block;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #232838;
-    color: var(--muted);
-    margin-bottom: 10px;
+  .sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    box-shadow: inset 0 0 40px rgba(60,45,20,0.06);
+    pointer-events: none;
   }
-  .target-text {
+  .holes { display: none; }
+
+  .kicker {
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+  }
+  .kicker b { color: var(--pen-blue); font-weight: 700; }
+  h1 {
+    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
     font-size: 26px;
-    font-weight: 600;
-    line-height: 1.4;
+    margin: 0 0 18px;
+    color: var(--pen-blue);
+  }
+
+  .item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+  select {
+    background: transparent;
+    color: var(--ink-muted);
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 2px 4px;
+    cursor: pointer;
+    max-width: 60%;
+  }
+  select:focus { outline: none; color: var(--pen-blue); border-color: var(--pen-blue-soft); }
+
+  .target-text {
+    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1.3;
+    color: var(--pen-blue);
+    margin: 6px 0 18px;
+    word-break: keep-all;
+  }
+
+  .rec-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 10px 0 6px;
+  }
+  .rec-btn {
+    flex: none;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: 2px solid var(--pen-red);
+    background: var(--paper);
+    color: var(--pen-red);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.15s ease;
+  }
+  .rec-btn:active { transform: scale(0.94); }
+  .rec-btn .dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--pen-red);
+    transition: border-radius 0.15s ease, width 0.15s ease, height 0.15s ease;
+  }
+  .rec-btn.recording .dot { border-radius: 4px; width: 18px; height: 18px; }
+  .rec-btn.recording {
+    animation: pulse 1.4s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(181,67,47,0.45); }
+    70% { box-shadow: 0 0 0 14px rgba(181,67,47,0); }
+    100% { box-shadow: 0 0 0 0 rgba(181,67,47,0); }
+  }
+  .rec-label {
+    font-size: 12px;
+    color: var(--ink-muted);
+    text-align: center;
+    margin-top: 6px;
+    width: 62px;
+  }
+  canvas#waveform {
+    flex: 1;
+    height: 44px;
+    width: 100%;
+  }
+  .next-link {
+    background: none;
+    border: none;
+    color: var(--pen-blue-soft);
+    font-family: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 14px;
+  }
+  .next-link:hover { color: var(--pen-blue); }
+
+  audio { width: 100%; margin-top: 14px; display: none; height: 32px; }
+  .status { font-size: 12.5px; color: var(--ink-muted); margin-top: 10px; min-height: 16px; }
+
+  .result {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(94,128,171,0.5);
+    display: none;
+  }
+  .result-label {
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .recognized {
+    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
+    font-size: 26px;
+    line-height: 1.7;
+    color: var(--pen-red);
     margin-bottom: 4px;
   }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-  button {
-    font-size: 14px;
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: #1f2330;
-    color: var(--text);
-    cursor: pointer;
+  .word { padding: 0 2px; }
+  .word.equal { background: linear-gradient(transparent 60%, var(--marker-green) 60%); }
+  .word.replace, .word.delete {
+    text-decoration: wavy underline var(--pen-red);
+    text-decoration-thickness: 1.5px;
   }
-  button:hover { border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #0b0d13; border-color: var(--accent); font-weight: 600; }
-  button.primary.recording { background: var(--bad); border-color: var(--bad); color: #fff; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .status { font-size: 13px; color: var(--muted); margin-top: 10px; min-height: 18px; }
-  .result-title { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .recognized {
+  .word.insert { background: linear-gradient(transparent 55%, var(--marker-yellow) 55%); }
+
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Gaegu", sans-serif;
+    font-weight: 700;
     font-size: 20px;
-    line-height: 1.5;
-    margin-bottom: 10px;
+    margin: 6px 0 10px;
+    transform: rotate(-2deg);
   }
-  .word { padding: 1px 3px; border-radius: 4px; }
-  .word.equal { color: var(--text); }
-  .word.replace, .word.delete { color: var(--bad); text-decoration: line-through; }
-  .word.insert { color: #ffb454; }
-  .verdict { font-weight: 700; margin-bottom: 8px; }
-  .verdict.correct { color: var(--good); }
-  .verdict.wrong { color: var(--bad); }
-  .feedback { font-size: 14px; line-height: 1.6; color: var(--text); }
-  .grader-badge { font-size: 11px; color: var(--muted); margin-top: 10px; }
-  audio { width: 100%; margin-top: 12px; }
-  select { background: #1f2330; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+  .verdict.correct { color: var(--pen-green); }
+  .verdict.wrong { color: var(--pen-red); }
+  .verdict::before { content: ""; display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 3px solid currentColor; }
+  .verdict.correct::before { border-radius: 4px; transform: rotate(45deg) scale(0.8); border-width: 0 3px 3px 0; width: 8px; height: 14px; margin: 0 8px 4px 4px; }
+
+  .note {
+    background: #fdf7e3;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.12);
+    border-radius: 2px;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4a3f2c;
+    transform: rotate(0.8deg);
+    position: relative;
+  }
+  .note::before {
+    content: "📌";
+    position: absolute;
+    top: -12px;
+    left: -10px;
+    font-size: 18px;
+    transform: rotate(-25deg);
+  }
+  .grader-badge {
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    margin-top: 10px;
+    text-align: right;
+  }
+
+  @media (max-width: 480px) {
+    .sheet { padding: 28px 18px 24px 44px; }
+    .sheet { background-image:
+        linear-gradient(to right, transparent 0 24px, var(--margin) 24px 25.5px, transparent 25.5px),
+        repeating-linear-gradient(to bottom, transparent 0 34px, var(--rule) 34px 35px);
+    }
+    .target-text { font-size: 30px; }
+    .recognized { font-size: 21px; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <h1>발음 채점 데모</h1>
-  <div class="sub">화면의 단어/문장을 소리내어 읽고 녹음하면, STT로 인식된 결과와 피드백을 보여줍니다.</div>
+<div class="sheet">
+  <div class="kicker"><span>말하기 연습장 <b>No. 1</b></span><span id="itemTag">-</span></div>
+  <h1>오늘의 문장을 소리내어 읽어보세요</h1>
 
-  <div class="card">
-    <span class="tag" id="itemTag">-</span>
-    <select id="itemSelect" style="float:right"></select>
-    <div class="target-text" id="targetText">불러오는 중...</div>
-
-    <div class="row">
-      <button class="primary" id="recordBtn">녹음 시작</button>
-      <button id="nextBtn">다음 문항</button>
-    </div>
-    <audio id="playback" controls style="display:none"></audio>
-    <div class="status" id="status"></div>
+  <div class="item-row">
+    <span>연습할 카드 고르기</span>
+    <select id="itemSelect"></select>
   </div>
 
-  <div class="card" id="resultCard" style="display:none">
-    <div class="result-title">인식된 문장</div>
+  <div class="target-text" id="targetText">불러오는 중...</div>
+
+  <div class="rec-row">
+    <div>
+      <button class="rec-btn" id="recordBtn" aria-label="녹음 시작"><span class="dot"></span></button>
+      <div class="rec-label" id="recLabel">녹음</div>
+    </div>
+    <canvas id="waveform" width="600" height="88"></canvas>
+  </div>
+  <button class="next-link" id="nextBtn">다음 카드로 넘기기 →</button>
+
+  <audio id="playback" controls></audio>
+  <div class="status" id="status"></div>
+
+  <div class="result" id="resultCard">
+    <div class="result-label">✎ 인식된 소리</div>
     <div class="recognized" id="recognizedText"></div>
     <div class="verdict" id="verdict"></div>
-    <div class="feedback" id="feedback"></div>
+    <div class="note" id="noteBox"><span class="feedback" id="feedback"></span></div>
     <div class="grader-badge" id="graderBadge"></div>
   </div>
 </div>
@@ -119,6 +298,7 @@ let mediaRecorder = null;
 let chunks = [];
 let recording = false;
 let stopTimer = null;
+let audioCtx = null, analyser = null, sourceNode = null, rafId = null;
 
 const el = (id) => document.getElementById(id);
 
@@ -126,7 +306,7 @@ async function loadItems() {
   const res = await fetch(`${API}/api/items`);
   items = await res.json();
   const sel = el("itemSelect");
-  sel.innerHTML = items.map((it, i) => `<option value="${i}">${it.language.toUpperCase()} · ${it.level} · ${it.text}</option>`).join("");
+  sel.innerHTML = items.map((it, i) => `<option value="${i}">${it.language === "ko" ? "한국어" : "영어"} · ${it.level === "word" ? "단어" : "문장"} · ${it.text}</option>`).join("");
   setItem(0);
 }
 
@@ -154,6 +334,49 @@ el("recordBtn").addEventListener("click", async () => {
   await startRecording();
 });
 
+function setupVisualizer(stream) {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 1024;
+  sourceNode = audioCtx.createMediaStreamSource(stream);
+  sourceNode.connect(analyser);
+
+  const canvas = el("waveform");
+  const ctx = canvas.getContext("2d");
+  const bufferLength = analyser.fftSize;
+  const dataArray = new Uint8Array(bufferLength);
+
+  function render() {
+    if (!recording) return;
+    rafId = requestAnimationFrame(render);
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#b5432f";
+    ctx.beginPath();
+    const sliceWidth = canvas.width / bufferLength;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const v = dataArray[i] / 128.0;
+      const y = (v * canvas.height) / 2;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      x += sliceWidth;
+    }
+    ctx.stroke();
+  }
+  render();
+}
+
+function teardownVisualizer() {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (sourceNode) { sourceNode.disconnect(); sourceNode = null; }
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
+  const canvas = el("waveform");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 async function startRecording() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -163,8 +386,10 @@ async function startRecording() {
     mediaRecorder.onstop = onRecordingStop;
     mediaRecorder.start();
     recording = true;
-    el("recordBtn").textContent = "녹음 중지";
+    setupVisualizer(stream);
     el("recordBtn").classList.add("recording");
+    el("recordBtn").setAttribute("aria-label", "녹음 중지");
+    el("recLabel").textContent = "중지";
     el("status").textContent = "녹음 중... (최대 20초)";
     stopTimer = setTimeout(() => stopRecording(), 20000);
   } catch (err) {
@@ -179,8 +404,10 @@ function stopRecording() {
     mediaRecorder.stream.getTracks().forEach((t) => t.stop());
   }
   recording = false;
-  el("recordBtn").textContent = "녹음 시작";
+  teardownVisualizer();
   el("recordBtn").classList.remove("recording");
+  el("recordBtn").setAttribute("aria-label", "녹음 시작");
+  el("recLabel").textContent = "녹음";
 }
 
 async function onRecordingStop() {
@@ -209,12 +436,12 @@ function showResult(data) {
   el("resultCard").style.display = "block";
   const recognizedEl = el("recognizedText");
   recognizedEl.innerHTML = data.diff_ops.map((op) => {
-    const text = op.recognized || `[${op.target}]`;
+    const text = op.recognized || `[ ${op.target} ]`;
     return `<span class="word ${op.op}">${escapeHtml(text)}</span>`;
   }).join(" ") || "<em>(인식된 내용 없음)</em>";
 
   const verdictEl = el("verdict");
-  verdictEl.textContent = data.correct ? "정답입니다" : "다시 시도해보세요";
+  verdictEl.textContent = data.correct ? "참 잘했어요" : "다시 읽어볼까요";
   verdictEl.className = "verdict " + (data.correct ? "correct" : "wrong");
 
   el("feedback").textContent = data.feedback;

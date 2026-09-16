@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>발음 채점 데모</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #171a23;
+    --text: #e8e9ee;
+    --muted: #8b8fa3;
+    --accent: #6c8dff;
+    --good: #35c98f;
+    --bad: #ff6b6b;
+    --border: #2a2e3d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .app { width: 100%; max-width: 560px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #232838;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .target-text {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  button {
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #1f2330;
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #0b0d13; border-color: var(--accent); font-weight: 600; }
+  button.primary.recording { background: var(--bad); border-color: var(--bad); color: #fff; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status { font-size: 13px; color: var(--muted); margin-top: 10px; min-height: 18px; }
+  .result-title { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .recognized {
+    font-size: 20px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .word { padding: 1px 3px; border-radius: 4px; }
+  .word.equal { color: var(--text); }
+  .word.replace, .word.delete { color: var(--bad); text-decoration: line-through; }
+  .word.insert { color: #ffb454; }
+  .verdict { font-weight: 700; margin-bottom: 8px; }
+  .verdict.correct { color: var(--good); }
+  .verdict.wrong { color: var(--bad); }
+  .feedback { font-size: 14px; line-height: 1.6; color: var(--text); }
+  .grader-badge { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  audio { width: 100%; margin-top: 12px; }
+  select { background: #1f2330; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>발음 채점 데모</h1>
+  <div class="sub">화면의 단어/문장을 소리내어 읽고 녹음하면, STT로 인식된 결과와 피드백을 보여줍니다.</div>
+
+  <div class="card">
+    <span class="tag" id="itemTag">-</span>
+    <select id="itemSelect" style="float:right"></select>
+    <div class="target-text" id="targetText">불러오는 중...</div>
+
+    <div class="row">
+      <button class="primary" id="recordBtn">녹음 시작</button>
+      <button id="nextBtn">다음 문항</button>
+    </div>
+    <audio id="playback" controls style="display:none"></audio>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none">
+    <div class="result-title">인식된 문장</div>
+    <div class="recognized" id="recognizedText"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="grader-badge" id="graderBadge"></div>
+  </div>
+</div>
+
+<script>
+const API = "";
+let items = [];
+let currentItem = null;
+let mediaRecorder = null;
+let chunks = [];
+let recording = false;
+let stopTimer = null;
+
+const el = (id) => document.getElementById(id);
+
+async function loadItems() {
+  const res = await fetch(`${API}/api/items`);
+  items = await res.json();
+  const sel = el("itemSelect");
+  sel.innerHTML = items.map((it, i) => `<option value="${i}">${it.language.toUpperCase()} · ${it.level} · ${it.text}</option>`).join("");
+  setItem(0);
+}
+
+function setItem(idx) {
+  currentItem = items[idx];
+  el("itemSelect").value = idx;
+  el("itemTag").textContent = `${currentItem.language === "ko" ? "한국어" : "English"} · ${currentItem.level === "word" ? "단어" : "문장"}`;
+  el("targetText").textContent = currentItem.text;
+  el("resultCard").style.display = "none";
+  el("playback").style.display = "none";
+  el("status").textContent = "";
+}
+
+el("itemSelect").addEventListener("change", (e) => setItem(parseInt(e.target.value, 10)));
+el("nextBtn").addEventListener("click", () => {
+  const cur = parseInt(el("itemSelect").value, 10);
+  setItem((cur + 1) % items.length);
+});
+
+el("recordBtn").addEventListener("click", async () => {
+  if (recording) {
+    stopRecording();
+    return;
+  }
+  await startRecording();
+});
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+    mediaRecorder.onstop = onRecordingStop;
+    mediaRecorder.start();
+    recording = true;
+    el("recordBtn").textContent = "녹음 중지";
+    el("recordBtn").classList.add("recording");
+    el("status").textContent = "녹음 중... (최대 20초)";
+    stopTimer = setTimeout(() => stopRecording(), 20000);
+  } catch (err) {
+    el("status").textContent = "마이크 접근 권한이 필요합니다: " + err.message;
+  }
+}
+
+function stopRecording() {
+  if (stopTimer) clearTimeout(stopTimer);
+  if (mediaRecorder && recording) {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach((t) => t.stop());
+  }
+  recording = false;
+  el("recordBtn").textContent = "녹음 시작";
+  el("recordBtn").classList.remove("recording");
+}
+
+async function onRecordingStop() {
+  const blob = new Blob(chunks, { type: "audio/webm" });
+  const url = URL.createObjectURL(blob);
+  el("playback").src = url;
+  el("playback").style.display = "block";
+  el("status").textContent = "채점 중...";
+
+  const form = new FormData();
+  form.append("item_id", currentItem.id);
+  form.append("audio", blob, "recording.webm");
+
+  try {
+    const res = await fetch(`${API}/api/grade`, { method: "POST", body: form });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    showResult(data);
+    el("status").textContent = "";
+  } catch (err) {
+    el("status").textContent = "채점 실패: " + err.message;
+  }
+}
+
+function showResult(data) {
+  el("resultCard").style.display = "block";
+  const recognizedEl = el("recognizedText");
+  recognizedEl.innerHTML = data.diff_ops.map((op) => {
+    const text = op.recognized || `[${op.target}]`;
+    return `<span class="word ${op.op}">${escapeHtml(text)}</span>`;
+  }).join(" ") || "<em>(인식된 내용 없음)</em>";
+
+  const verdictEl = el("verdict");
+  verdictEl.textContent = data.correct ? "정답입니다" : "다시 시도해보세요";
+  verdictEl.className = "verdict " + (data.correct ? "correct" : "wrong");
+
+  el("feedback").textContent = data.feedback;
+  el("graderBadge").textContent = `grader: ${data.grader}`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+loadItems();
+</script>
+</body>
+</html>

@@ -190,12 +190,62 @@
   audio { width: 100%; margin-top: 14px; display: none; height: 32px; }
   .status { font-size: 12.5px; color: var(--ink-muted); margin-top: 10px; min-height: 16px; text-align: center; }
 
-  .result {
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px dashed rgba(94,128,171,0.5);
+  .modal-backdrop {
     display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,15,8,0.6);
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    z-index: 100;
   }
+  .modal-backdrop.open { display: flex; }
+  .modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: var(--paper);
+    border-radius: 8px;
+    box-shadow: 0 20px 55px rgba(0,0,0,0.55);
+    padding: 30px 22px 20px;
+    transform: rotate(-0.6deg);
+    animation: modalIn 0.16s ease-out;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: rotate(-0.6deg) scale(0.95); }
+    to { opacity: 1; transform: rotate(-0.6deg) scale(1); }
+  }
+  .modal-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: var(--ink-muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .modal-close:hover { background: var(--paper-edge); color: var(--ink); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .modal-btn {
+    flex: 1;
+    padding: 11px 10px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .modal-btn.secondary { background: var(--paper-edge); border: 1.5px dashed var(--pen-blue-soft); color: var(--pen-blue); }
+  .modal-btn.primary { background: var(--pen-blue); border: 1.5px solid var(--pen-blue); color: var(--paper); }
+  .modal-btn:active { transform: scale(0.96); }
+
   .result-label {
     font-size: 11px;
     color: var(--ink-muted);
@@ -294,16 +344,23 @@
     <div class="hold-label" id="holdLabel">누르고 있는 동안 녹음돼요</div>
     <canvas id="waveform" width="420" height="80"></canvas>
     <button class="draw-btn" id="nextBtn"><span class="draw-icon">🎲</span> 다른 카드 뽑기</button>
-    <audio id="playback" controls></audio>
     <div class="status" id="status"></div>
   </div>
+</div>
 
-  <div class="result" id="resultCard">
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal-card" id="modalCard">
+    <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
     <div class="result-label">✎ 인식된 소리</div>
     <div class="recognized" id="recognizedText"></div>
     <div class="verdict" id="verdict"></div>
     <div class="note" id="noteBox"><span class="feedback" id="feedback"></span></div>
+    <audio id="playback" controls></audio>
     <div class="grader-badge" id="graderBadge"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="modalRetry">🔁 다시 녹음</button>
+      <button class="modal-btn primary" id="modalNext">🎲 다음 카드</button>
+    </div>
   </div>
 </div>
 
@@ -342,9 +399,9 @@ function drawRandomItem() {
   el("pageNo").textContent = `No. ${drawCount}`;
   el("itemTag").textContent = `${currentItem.language === "ko" ? "한국어" : "English"} · ${currentItem.level === "word" ? "단어" : "문장"}`;
   el("targetText").textContent = currentItem.text;
-  el("resultCard").style.display = "none";
   el("playback").style.display = "none";
   el("status").textContent = "";
+  closeModal();
 }
 
 el("nextBtn").addEventListener("click", (e) => {
@@ -352,6 +409,14 @@ el("nextBtn").addEventListener("click", (e) => {
   setTimeout(() => e.currentTarget.classList.remove("spin"), 400);
   drawRandomItem();
 });
+
+function openModal() { el("modalBackdrop").classList.add("open"); }
+function closeModal() { el("modalBackdrop").classList.remove("open"); }
+el("modalClose").addEventListener("click", closeModal);
+el("modalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+el("modalRetry").addEventListener("click", closeModal);
+el("modalNext").addEventListener("click", () => { drawRandomItem(); });
 
 function setupVisualizer(stream) {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -401,12 +466,19 @@ function teardownVisualizer() {
   el("holdWrap").style.setProperty("--progress", 0);
 }
 
+const MIME_CANDIDATES = ["audio/webm", "audio/mp4", "audio/aac", "audio/ogg"];
+function pickMimeType() {
+  if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
+  return MIME_CANDIDATES.find((t) => MediaRecorder.isTypeSupported(t)) || "";
+}
+
 async function beginHold() {
   if (recording) return;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     chunks = [];
-    mediaRecorder = new MediaRecorder(stream);
+    const mimeType = pickMimeType();
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     mediaRecorder.onstop = onRecordingStop;
     mediaRecorder.start();
@@ -447,7 +519,9 @@ recordBtn.addEventListener("keyup", (e) => {
 });
 
 async function onRecordingStop() {
-  const blob = new Blob(chunks, { type: "audio/webm" });
+  const mimeType = mediaRecorder.mimeType || "audio/webm";
+  const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
+  const blob = new Blob(chunks, { type: mimeType });
   const url = URL.createObjectURL(blob);
   el("playback").src = url;
   el("playback").style.display = "block";
@@ -456,7 +530,7 @@ async function onRecordingStop() {
 
   const form = new FormData();
   form.append("item_id", currentItem.id);
-  form.append("audio", blob, "recording.webm");
+  form.append("audio", blob, `recording.${ext}`);
 
   try {
     const res = await fetch(`${API}/api/grade`, { method: "POST", body: form });
@@ -471,7 +545,6 @@ async function onRecordingStop() {
 }
 
 function showResult(data) {
-  el("resultCard").style.display = "block";
   const recognizedEl = el("recognizedText");
   recognizedEl.innerHTML = data.diff_ops.map((op) => {
     const text = op.recognized || `[ ${op.target} ]`;
@@ -484,6 +557,7 @@ function showResult(data) {
 
   el("feedback").textContent = data.feedback;
   el("graderBadge").textContent = `grader: ${data.grader}`;
+  openModal();
 }
 
 function escapeHtml(s) {

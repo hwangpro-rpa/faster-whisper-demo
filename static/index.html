@@ -2,228 +2,216 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>말하기 연습장</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✏️</text></svg>" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>말하기 연습</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%2317171a%22/><rect x=%2242%22 y=%2224%22 width=%2216%22 height=%2234%22 rx=%228%22 fill=%22%23fff%22/><path d=%22M30 50v4a20 20 0 0 0 40 0v-4%22 stroke=%22%23fff%22 stroke-width=%227%22 fill=%22none%22 stroke-linecap=%22round%22/><line x1=%2250%22 y1=%2278%22 x2=%2250%22 y2=%2288%22 stroke=%22%23fff%22 stroke-width=%227%22 stroke-linecap=%22round%22/></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --desk: #3d3226;
-    --desk-shadow: rgba(0,0,0,0.45);
-    --paper: #faf5e6;
-    --paper-edge: #efe6cf;
-    --rule: rgba(94,128,171,0.38);
-    --margin: #c8574a;
-    --pen-blue: #2c4a73;
-    --pen-blue-soft: #5872a1;
-    --pen-red: #b5432f;
-    --pen-green: #46693c;
-    --ink: #20262f;
-    --ink-muted: #8a8171;
-    --marker-yellow: rgba(255, 214, 92, 0.55);
-    --marker-green: rgba(150, 199, 128, 0.45);
-    --highlighter: rgba(255, 224, 102, 0.65);
+    --page-bg: #eae8e1;
+    --surface: #ffffff;
+    --surface-2: #f1efe8;
+    --border: #e4e1d9;
+    --text: #17171a;
+    --text-muted: #6f6d66;
+    --text-faint: #a6a399;
+    --accent: #1f6f54;
+    --accent-strong: #17573f;
+    --accent-soft: #e1efe8;
+    --danger: #b3403a;
+    --danger-soft: #f7e8e5;
+    --warn: #9c7714;
+    --warn-soft: #f4edd8;
+    --shadow-sm: 0 1px 2px rgba(20,20,15,0.05);
+    --shadow-lg: 0 1px 2px rgba(20,20,15,0.04), 0 24px 48px rgba(20,20,15,0.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #0b0b0c;
+      --surface: #1c1c1e;
+      --surface-2: #262628;
+      --border: #313133;
+      --text: #f2f1ee;
+      --text-muted: #9d9b95;
+      --text-faint: #6d6b66;
+      --accent: #4fc39a;
+      --accent-strong: #7ad9b6;
+      --accent-soft: rgba(79,195,154,0.14);
+      --danger: #e3897f;
+      --danger-soft: rgba(227,137,127,0.14);
+      --warn: #dcb45f;
+      --warn-soft: rgba(220,180,95,0.14);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow-lg: 0 1px 2px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.55);
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     margin: 0;
-    background:
-      radial-gradient(ellipse at 50% -10%, rgba(255,255,255,0.06), transparent 60%),
-      repeating-linear-gradient(115deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 6px),
-      var(--desk);
-    color: var(--pen-blue);
-    font-family: "IBM Plex Sans KR", -apple-system, sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 40px 16px;
-    min-height: 100%;
+    background: var(--page-bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  .sheet {
-    width: 100%;
-    max-width: 620px;
-    background: var(--paper);
-    background-image:
-      linear-gradient(to right, transparent 0 54px, var(--margin) 54px 55.5px, transparent 55.5px),
-      repeating-linear-gradient(to bottom, transparent 0 37px, var(--rule) 37px 38px);
-    box-shadow: 0 24px 50px var(--desk-shadow), 0 2px 0 var(--paper-edge);
-    border-radius: 3px;
-    padding: 34px 30px 34px 74px;
-    transform: rotate(-0.4deg);
+  .app-frame {
     position: relative;
-  }
-  .sheet::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 3px;
-    box-shadow: inset 0 0 40px rgba(60,45,20,0.06);
-    pointer-events: none;
-  }
-
-  .kicker {
-    font-size: 12px;
-    color: var(--ink-muted);
-    letter-spacing: 0.04em;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 auto;
+    background: var(--surface);
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 2px;
-  }
-  .kicker b { color: var(--pen-blue); font-weight: 700; }
-
-  .profile-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    margin: 4px 0 14px;
-    background: var(--paper-edge);
-    border-radius: 10px;
-  }
-  .char-emoji { font-size: 26px; line-height: 1; }
-  .profile-info { flex: 1; min-width: 0; }
-  .profile-level {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--pen-blue);
-    margin-bottom: 3px;
-  }
-  .xp-bar {
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(94,128,171,0.2);
+    flex-direction: column;
     overflow: hidden;
   }
-  .xp-fill {
-    height: 100%;
-    background: var(--pen-blue-soft);
-    border-radius: 999px;
-    transition: width 0.3s ease;
+  @media (min-width: 640px) {
+    body { display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .app-frame {
+      max-width: 420px;
+      height: min(840px, 92vh);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+    }
   }
-  .stamp-count {
+
+  /* ---------- header ---------- */
+  .appbar {
     flex: none;
-    font-size: 12px;
-    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .profile-chip { background: none; border: none; padding: 0; cursor: pointer; }
+  .chip-avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+  }
+  .profile-chip:active .chip-avatar { transform: scale(0.94); }
+  .char-emoji { font-size: 19px; line-height: 1; }
+  .level-badge {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 3px;
+    border-radius: 999px;
+    background: var(--text);
+    color: var(--surface);
+    font-size: 9.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--surface);
+  }
+  .appbar-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .appbar-meta .tag {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
     white-space: nowrap;
   }
+  .appbar-meta .counter { color: var(--text-faint); white-space: nowrap; }
+  .appbar-meta .counter b { color: var(--text-muted); font-weight: 600; }
 
-  .stamp-book {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px dashed rgba(94,128,171,0.4);
-  }
-  .stamp-chip {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    border: 1.5px dashed rgba(138,129,113,0.5);
-    color: var(--ink-muted);
-  }
-  .stamp-chip.earned {
-    border-style: solid;
-    border-color: var(--pen-red);
-    color: var(--pen-red);
-    background: rgba(181,67,47,0.08);
-  }
-
-  .blank-tag {
-    font-size: 10.5px;
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: var(--marker-yellow);
-    color: #5a4a1a;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-
-  .level-banner {
-    display: none;
-    font-family: "Gaegu", sans-serif;
-    font-size: 15px;
-    color: var(--pen-red);
-    background: var(--marker-yellow);
-    border-radius: 6px;
-    padding: 6px 10px;
-    margin-bottom: 10px;
-    text-align: center;
-  }
-  .level-banner.show { display: block; }
-  h1 {
-    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
-    font-size: 26px;
-    margin: 0 0 20px;
-    color: var(--pen-blue);
-  }
-
-  .target-wrap { margin: 4px 0 26px; }
-  .target-hint {
-    font-size: 11.5px;
-    color: var(--ink-muted);
-    letter-spacing: 0.03em;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .listen-btn {
-    margin-left: auto;
-    background: none;
-    border: 1.5px solid var(--pen-blue-soft);
-    color: var(--pen-blue);
-    font-family: inherit;
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-    cursor: pointer;
-  }
-  .listen-btn:hover { background: var(--paper-edge); }
-  .listen-btn:active { transform: scale(0.96); }
-  .listen-btn[hidden] { display: none; }
-  .target-text {
-    display: inline;
-    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
-    font-weight: 700;
-    font-size: 34px;
-    line-height: 1.5;
-    color: var(--ink);
-    word-break: keep-all;
-    background: linear-gradient(transparent 62%, var(--highlighter) 62%);
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-  }
-
-  .practice-area {
+  /* ---------- stage (flashcard) ---------- */
+  .stage {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 6px 0 4px;
+    justify-content: center;
+    text-align: center;
+    gap: 18px;
+    padding: 28px 26px;
   }
+  .stage-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .blank-tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .listen-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .listen-btn svg { width: 13px; height: 13px; }
+  .listen-btn:hover { background: var(--surface-2); color: var(--text); }
+  .listen-btn:active { transform: scale(0.96); }
+  .listen-btn[hidden] { display: none; }
+  .target-text {
+    margin: 0;
+    font-weight: 700;
+    font-size: clamp(22px, 6.6vw, 32px);
+    line-height: 1.45;
+    color: var(--text);
+    word-break: keep-all;
+    max-width: 360px;
+  }
+
+  /* ---------- dock (controls) ---------- */
+  .dock {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 20px calc(18px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border);
+  }
+  canvas#waveform { width: 100%; max-width: 300px; height: 28px; }
 
   .hold-wrap {
     --progress: 0;
     position: relative;
-    width: 108px;
-    height: 108px;
+    width: 92px;
+    height: 92px;
+    margin-top: 2px;
   }
   .hold-wrap::before {
     content: "";
     position: absolute;
-    inset: -7px;
+    inset: -6px;
     border-radius: 50%;
-    background: conic-gradient(var(--pen-red) calc(var(--progress) * 360deg), transparent 0);
+    background: conic-gradient(var(--accent) calc(var(--progress) * 360deg), var(--border) 0);
   }
   .hold-btn {
     position: relative;
@@ -231,9 +219,9 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 2.5px solid var(--pen-blue);
-    background: var(--paper);
-    color: var(--pen-blue);
+    border: none;
+    background: var(--text);
+    color: var(--surface);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -242,102 +230,234 @@
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    box-shadow: var(--shadow-sm);
     transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease;
   }
-  .hold-btn svg { width: 34px; height: 34px; pointer-events: none; }
-  .hold-wrap.active .hold-btn {
-    transform: scale(1.08);
-    background: #eef2f8;
-    color: var(--pen-red);
-    border-color: var(--pen-red);
-  }
+  .hold-btn svg { width: 28px; height: 28px; pointer-events: none; }
+  .hold-wrap.active .hold-btn { transform: scale(1.06); background: var(--danger); color: #fff; }
   .hold-wrap.active .hold-btn svg { animation: micPulse 1s ease-in-out infinite; }
-  @keyframes micPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+  @keyframes micPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 
   .hold-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-muted);
-    margin-top: 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-faint);
+    margin-top: 10px;
     text-align: center;
-    min-height: 18px;
+    min-height: 16px;
   }
-  .hold-wrap.active + .hold-label { color: var(--pen-red); }
-
-  canvas#waveform {
-    width: 100%;
-    max-width: 420px;
-    height: 40px;
-    margin-top: 6px;
-  }
+  .hold-wrap.active + .hold-label { color: var(--danger); }
 
   .draw-btn {
-    margin-top: 18px;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-weight: 500;
+    font-size: 12.5px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .draw-btn:hover { background: var(--surface-2); }
+  .draw-btn:active { transform: scale(0.96); }
+  .draw-btn .draw-icon { display: inline-flex; transition: transform 0.35s ease; }
+  .draw-btn.spin .draw-icon { transform: rotate(180deg); }
+
+  .status { font-size: 12px; color: var(--danger); margin-top: 8px; min-height: 15px; text-align: center; }
+
+  /* ---------- bottom sheets ---------- */
+  .sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,15,13,0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 50;
+  }
+  .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: relative;
+    width: 100%;
+    max-height: 86%;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -14px 34px rgba(0,0,0,0.14);
+    padding: 14px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+  }
+  .sheet-backdrop.open .sheet { transform: translateY(0); }
+  .sheet-handle { width: 36px; height: 4px; border-radius: 999px; background: var(--border); margin: 0 auto 14px; }
+  .sheet-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text-faint);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .sheet-close:hover { color: var(--text); }
+
+  /* ---------- stats sheet ---------- */
+  .stats-summary { padding-top: 4px; }
+  .stats-level { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .stats-level b { font-weight: 700; }
+  .xp-bar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; margin-bottom: 6px; }
+  .xp-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+  .xp-label { font-size: 11.5px; color: var(--text-faint); margin-bottom: 20px; }
+  .stats-badges-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .stamp-count { font-size: 11.5px; font-weight: 600; color: var(--text-faint); }
+  .stamp-book { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; padding-bottom: 4px; }
+  .stamp-chip {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    color: var(--text-faint);
+  }
+  .stamp-chip svg { width: 15px; height: 15px; }
+  .stamp-chip.earned { border: 1px solid transparent; background: var(--accent-soft); color: var(--accent-strong); }
+
+  /* ---------- result sheet ---------- */
+  .level-banner {
+    display: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .level-banner.show { display: block; }
+  .result-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .recognized {
+    font-size: clamp(18px, 5.6vw, 22px);
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .word { padding: 1px 3px; border-radius: 4px; }
+  .word.equal { background: var(--accent-soft); }
+  .word.replace, .word.delete {
+    background: var(--danger-soft);
+    text-decoration: underline solid var(--danger);
+    text-decoration-thickness: 1.5px;
+  }
+  .word.insert { background: var(--warn-soft); }
+
+  .score-row { display: flex; align-items: center; gap: 14px; margin: 14px 0 6px; flex-wrap: wrap; }
+  .score-stamp {
+    flex: none;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .score-stamp .num { font-size: 22px; font-weight: 700; line-height: 1; }
+  .score-stamp .unit { font-size: 10.5px; margin-top: 3px; color: var(--text-faint); }
+  .score-chips { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; min-width: 160px; }
+  .score-chip {
+    font-size: 11.5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .score-chip b { color: var(--text); font-weight: 700; }
+
+  .verdict {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--paper-edge);
-    border: 1.5px dashed var(--pen-blue-soft);
-    color: var(--pen-blue);
-    font-family: inherit;
     font-weight: 600;
-    font-size: 13.5px;
-    padding: 9px 18px;
+    font-size: 14px;
+    padding: 6px 14px 6px 8px;
     border-radius: 999px;
-    cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease;
+    margin: 8px 0 14px;
   }
-  .draw-btn:hover { background: #f1e9d2; transform: translateY(-1px); }
-  .draw-btn:active { transform: translateY(0) scale(0.96); }
-  .draw-btn .draw-icon { display: inline-block; transition: transform 0.4s ease; }
-  .draw-btn.spin .draw-icon { transform: rotate(360deg); }
-
-  audio { width: 100%; margin-top: 14px; display: none; height: 32px; }
-  .status { font-size: 12.5px; color: var(--ink-muted); margin-top: 10px; min-height: 16px; text-align: center; }
-
-  .modal-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(20,15,8,0.6);
+  .verdict.correct { background: var(--accent-soft); color: var(--accent-strong); }
+  .verdict.wrong { background: var(--danger-soft); color: var(--danger); }
+  .verdict::before {
+    content: "";
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 20px 16px;
-    z-index: 100;
-  }
-  .modal-backdrop.open { display: flex; }
-  .modal-card {
-    position: relative;
-    width: 100%;
-    max-width: 440px;
-    max-height: 88vh;
-    overflow-y: auto;
-    background: var(--paper);
-    border-radius: 8px;
-    box-shadow: 0 20px 55px rgba(0,0,0,0.55);
-    padding: 30px 22px 20px;
-    transform: rotate(-0.6deg);
-    animation: modalIn 0.16s ease-out;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: rotate(-0.6deg) scale(0.95); }
-    to { opacity: 1; transform: rotate(-0.6deg) scale(1); }
-  }
-  .modal-close {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    border: none;
-    background: none;
-    color: var(--ink-muted);
-    font-size: 16px;
-    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
   }
-  .modal-close:hover { background: var(--paper-edge); color: var(--ink); }
-  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .verdict.correct::before { content: "✓"; background: var(--accent); }
+  .verdict.wrong::before { content: "✕"; background: var(--danger); }
+
+  .note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .note-icon { flex: none; margin-top: 1px; color: var(--accent); }
+  .note-icon svg { width: 15px; height: 15px; display: block; }
+
+  audio { width: 100%; margin-top: 14px; display: none; height: 32px; }
+  .grader-badge { font-size: 10.5px; color: var(--text-faint); margin-top: 10px; text-align: right; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .modal-btn {
     flex: 1;
     padding: 11px 10px;
@@ -346,149 +466,43 @@
     font-weight: 600;
     font-size: 13.5px;
     cursor: pointer;
+    border: 1px solid transparent;
   }
-  .modal-btn.secondary { background: var(--paper-edge); border: 1.5px dashed var(--pen-blue-soft); color: var(--pen-blue); }
-  .modal-btn.primary { background: var(--pen-blue); border: 1.5px solid var(--pen-blue); color: var(--paper); }
-  .modal-btn:active { transform: scale(0.96); }
-
-  .result-label {
-    font-size: 11px;
-    color: var(--ink-muted);
-    letter-spacing: 0.06em;
-    margin-bottom: 6px;
-  }
-  .recognized {
-    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
-    font-size: 26px;
-    line-height: 1.7;
-    color: var(--pen-red);
-    margin-bottom: 4px;
-  }
-  .word { padding: 0 2px; }
-  .word.equal { background: linear-gradient(transparent 60%, var(--marker-green) 60%); }
-  .word.replace, .word.delete {
-    text-decoration: wavy underline var(--pen-red);
-    text-decoration-thickness: 1.5px;
-  }
-  .word.insert { background: linear-gradient(transparent 55%, var(--marker-yellow) 55%); }
-
-  .score-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 12px 0 4px;
-    flex-wrap: wrap;
-  }
-  .score-stamp {
-    flex: none;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 68px;
-    height: 68px;
-    border: 3px solid var(--pen-red);
-    border-radius: 50%;
-    transform: rotate(-8deg);
-    color: var(--pen-red);
-    font-family: "Gaegu", sans-serif;
-  }
-  .score-stamp .num { font-size: 24px; font-weight: 700; line-height: 1; }
-  .score-stamp .unit { font-size: 10.5px; margin-top: 1px; }
-  .score-chips {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    min-width: 160px;
-  }
-  .score-chip {
-    font-size: 11.5px;
-    padding: 3px 9px;
-    border-radius: 999px;
-    background: var(--paper-edge);
-    color: var(--ink-muted);
-    white-space: nowrap;
-  }
-  .score-chip b { color: var(--ink); font-weight: 700; }
-
-  .verdict {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: "Gaegu", sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    margin: 6px 0 10px;
-    transform: rotate(-2deg);
-  }
-  .verdict.correct { color: var(--pen-green); }
-  .verdict.wrong { color: var(--pen-red); }
-  .verdict::before { content: ""; display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 3px solid currentColor; }
-  .verdict.correct::before { border-radius: 4px; transform: rotate(45deg) scale(0.8); border-width: 0 3px 3px 0; width: 8px; height: 14px; margin: 0 8px 4px 4px; }
-
-  .note {
-    background: #fdf7e3;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 2px 3px 8px rgba(0,0,0,0.12);
-    border-radius: 2px;
-    padding: 12px 14px;
-    font-size: 14px;
-    line-height: 1.6;
-    color: #4a3f2c;
-    transform: rotate(0.8deg);
-    position: relative;
-  }
-  .note::before {
-    content: "📌";
-    position: absolute;
-    top: -12px;
-    left: -10px;
-    font-size: 18px;
-    transform: rotate(-25deg);
-  }
-  .grader-badge {
-    font-size: 10.5px;
-    color: var(--ink-muted);
-    margin-top: 10px;
-    text-align: right;
-  }
-
-  @media (max-width: 480px) {
-    .sheet { padding: 28px 18px 28px 44px; }
-    .sheet { background-image:
-        linear-gradient(to right, transparent 0 24px, var(--margin) 24px 25.5px, transparent 25.5px),
-        repeating-linear-gradient(to bottom, transparent 0 34px, var(--rule) 34px 35px);
-    }
-    .target-text { font-size: 26px; }
-    .recognized { font-size: 21px; }
-  }
+  .modal-btn.secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .modal-btn.secondary:hover { background: var(--surface-2); }
+  .modal-btn.primary { background: var(--text); color: var(--surface); }
+  .modal-btn:active { transform: scale(0.97); }
 </style>
 </head>
 <body>
-<div class="sheet">
-  <div class="kicker"><span>말하기 연습장 <b id="pageNo">No. 1</b></span><span id="itemTag">-</span></div>
-  <h1>오늘의 문장을 소리내어 읽어보세요</h1>
+<div class="app-frame" id="appFrame">
 
-  <div class="profile-bar">
-    <span class="char-emoji" id="charEmoji">🥚</span>
-    <div class="profile-info">
-      <div class="profile-level">Lv.<span id="charLevel">1</span> <span id="charName">알</span></div>
-      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  <header class="appbar">
+    <button class="profile-chip" id="profileChip" type="button" aria-label="레벨과 배지 보기">
+      <span class="chip-avatar">
+        <span class="char-emoji" id="charEmoji">🥚</span>
+        <span class="level-badge" id="levelBadge">1</span>
+      </span>
+    </button>
+    <div class="appbar-meta">
+      <span class="tag" id="itemTag">-</span>
+      <span class="counter">No. <b id="pageNo">1</b></span>
     </div>
-    <div class="stamp-count" id="stampCount">🎫 0/0</div>
-  </div>
+  </header>
 
-  <div class="target-wrap">
-    <div class="target-hint">
-      아래 내용을 큰 소리로 정확하게 읽어보세요
-      <span class="blank-tag" id="blankTag" style="display:none">빈칸을 채워서 전체를 말해보세요</span>
-      <button class="listen-btn" id="listenBtn" type="button">🔊 들어보기</button>
+  <main class="stage" id="stage">
+    <div class="stage-toolbar">
+      <span class="blank-tag" id="blankTag" style="display:none">빈칸 채우기</span>
+      <button class="listen-btn" id="listenBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        들어보기
+      </button>
     </div>
-    <div class="target-text" id="targetText">불러오는 중...</div>
-  </div>
+    <p class="target-text" id="targetText">불러오는 중...</p>
+  </main>
 
-  <div class="practice-area">
+  <footer class="dock">
+    <canvas id="waveform" width="420" height="80"></canvas>
     <div class="hold-wrap" id="holdWrap">
       <button class="hold-btn" id="recordBtn" aria-label="누르고 있는 동안 녹음됩니다">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -500,33 +514,52 @@
       </button>
     </div>
     <div class="hold-label" id="holdLabel">누르고 있는 동안 녹음돼요</div>
-    <canvas id="waveform" width="420" height="80"></canvas>
-    <button class="draw-btn" id="nextBtn"><span class="draw-icon">🎲</span> 다른 카드 뽑기</button>
+    <button class="draw-btn" id="nextBtn">
+      <span class="draw-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></span>
+      <span>다른 카드 뽑기</span>
+    </button>
     <div class="status" id="status"></div>
-  </div>
+  </footer>
 
-  <div class="stamp-book" id="stampBook"></div>
-</div>
-
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal-card" id="modalCard">
-    <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
-    <div class="level-banner" id="levelBanner"></div>
-    <div class="result-label">✎ 인식된 소리</div>
-    <div class="recognized" id="recognizedText"></div>
-    <div class="score-row">
-      <div class="score-stamp"><span class="num" id="scoreOverall">–</span><span class="unit">점</span></div>
-      <div class="score-chips" id="scoreChips"></div>
-    </div>
-    <div class="verdict" id="verdict"></div>
-    <div class="note" id="noteBox"><span class="feedback" id="feedback"></span></div>
-    <audio id="playback" controls></audio>
-    <div class="grader-badge" id="graderBadge"></div>
-    <div class="modal-actions">
-      <button class="modal-btn secondary" id="modalRetry">🔁 다시 녹음</button>
-      <button class="modal-btn primary" id="modalNext">🎲 다음 카드</button>
+  <div class="sheet-backdrop" id="statsBackdrop">
+    <div class="sheet stats-sheet" id="statsSheet" role="dialog" aria-label="레벨과 배지">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" id="statsClose" aria-label="닫기">✕</button>
+      <div class="stats-summary">
+        <div class="stats-level">Lv.<b id="charLevel">1</b> <span id="charName">알</span></div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+        <div class="xp-label" id="xpLabel">0/20 XP</div>
+      </div>
+      <div class="stats-badges-header"><span>달성 배지</span><span class="stamp-count" id="stampCount">0/0</span></div>
+      <div class="stamp-book" id="stampBook"></div>
     </div>
   </div>
+
+  <div class="sheet-backdrop" id="modalBackdrop">
+    <div class="sheet result-sheet" id="modalCard" role="dialog" aria-label="채점 결과">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" id="modalClose" aria-label="닫기">✕</button>
+      <div class="level-banner" id="levelBanner"></div>
+      <div class="result-label">인식된 내용</div>
+      <div class="recognized" id="recognizedText"></div>
+      <div class="score-row">
+        <div class="score-stamp"><span class="num" id="scoreOverall">–</span><span class="unit">점</span></div>
+        <div class="score-chips" id="scoreChips"></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="note" id="noteBox">
+        <span class="note-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+        <span class="feedback" id="feedback"></span>
+      </div>
+      <audio id="playback" controls></audio>
+      <div class="grader-badge" id="graderBadge"></div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" id="modalRetry">다시 녹음</button>
+        <button class="modal-btn primary" id="modalNext">다음 카드</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -571,6 +604,9 @@ let audioCtx = null, analyser = null, sourceNode = null, rafId = null;
 let holdStartTime = 0;
 
 const el = (id) => document.getElementById(id);
+
+const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+const LOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
 
 let ttsVoices = [];
 if ("speechSynthesis" in window) {
@@ -620,18 +656,20 @@ async function fetchProfile() {
 
 function renderProfileBar() {
   el("charEmoji").textContent = profile.character_emoji;
+  el("levelBadge").textContent = profile.level;
   el("charLevel").textContent = profile.level;
   el("charName").textContent = profile.character_name;
   const pct = Math.round((profile.xp_into_level / profile.xp_for_next_level) * 100);
   el("xpFill").style.width = `${pct}%`;
-  el("stampCount").textContent = `🎫 ${profile.stamps.length}/${items.length || "-"}`;
+  el("xpLabel").textContent = `${profile.xp_into_level}/${profile.xp_for_next_level} XP`;
+  el("stampCount").textContent = `${profile.stamps.length}/${items.length || "-"}`;
 }
 
 function renderStampBook() {
   el("stampBook").innerHTML = items
     .map((it) => {
       const earned = profile.stamps.includes(it.id);
-      return `<span class="stamp-chip ${earned ? "earned" : ""}" title="${escapeHtml(it.text)}">${earned ? "✓" : "?"}</span>`;
+      return `<span class="stamp-chip ${earned ? "earned" : ""}" title="${escapeHtml(it.text)}">${earned ? CHECK_ICON : LOCK_ICON}</span>`;
     })
     .join("");
 }
@@ -662,7 +700,7 @@ function drawRandomItem() {
   }
   currentItem = next;
   drawCount += 1;
-  el("pageNo").textContent = `No. ${drawCount}`;
+  el("pageNo").textContent = `${drawCount}`;
   el("itemTag").textContent = `${currentItem.language === "ko" ? "한국어" : "English"} · ${currentItem.level === "word" ? "단어" : "문장"}`;
   el("targetText").textContent = displayTextFor(currentItem);
   el("blankTag").style.display = currentItem.mode === "fill_blank" ? "inline-block" : "none";
@@ -683,9 +721,18 @@ function openModal() { el("modalBackdrop").classList.add("open"); }
 function closeModal() { el("modalBackdrop").classList.remove("open"); }
 el("modalClose").addEventListener("click", closeModal);
 el("modalBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 el("modalRetry").addEventListener("click", closeModal);
 el("modalNext").addEventListener("click", () => { drawRandomItem(); });
+
+function openStats() { el("statsBackdrop").classList.add("open"); }
+function closeStats() { el("statsBackdrop").classList.remove("open"); }
+el("profileChip").addEventListener("click", openStats);
+el("statsClose").addEventListener("click", closeStats);
+el("statsBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeStats(); });
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { closeModal(); closeStats(); }
+});
 
 function setupVisualizer(stream) {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -710,7 +757,7 @@ function setupVisualizer(stream) {
     analyser.getByteTimeDomainData(dataArray);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = "#b5432f";
+    ctx.strokeStyle = "#b3403a";
     ctx.beginPath();
     const sliceWidth = canvas.width / bufferLength;
     let x = 0;
@@ -860,10 +907,10 @@ function showResult(data) {
     renderProfileBar();
     renderStampBook();
     const messages = [];
-    if (data.profile.leveled_up) messages.push(`🎉 레벨 업! Lv.${profile.level} ${profile.character_name}(으)로 진화!`);
-    if (data.profile.new_stamp) messages.push("🎫 새 도장 획득!");
+    if (data.profile.leveled_up) messages.push(`레벨 업! Lv.${profile.level} ${profile.character_name}(으)로 진화했어요`);
+    if (data.profile.new_stamp) messages.push("새 배지를 획득했어요");
     if (messages.length) {
-      banner.textContent = messages.join(" ");
+      banner.textContent = messages.join(" · ");
       banner.classList.add("show");
     }
   }

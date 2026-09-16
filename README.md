@@ -1,7 +1,8 @@
 # voice-grader-demo
 
 STT(faster-whisper, CPU) + 규칙 기반 발음 채점 데모. 단어/문장(한국어·영어)을 화면에 보여주고
-녹음하면, 인식된 텍스트와 어떤 부분이 왜 틀렸는지에 대한 피드백을 보여줍니다.
+녹음하면, 인식된 텍스트와 어떤 부분이 왜 틀렸는지에 대한 피드백·점수를 보여줍니다. 로그인 없이
+기기 단위로 XP·레벨·도장이 쌓이는 게임화 요소도 있습니다.
 
 ## 구조
 
@@ -14,7 +15,10 @@ STT(faster-whisper, CPU) + 규칙 기반 발음 채점 데모. 단어/문장(한
 - `app/audio_prep.py` — 인식 전 오디오 정규화(피크 노멀라이즈).
 - `app/progress.py` — 기기 단위(로그인 없음) XP·레벨·도장 진행도. SQLite 파일(`voicegrader.db`,
   git에는 안 올라감) 하나로 저장.
-- `static/index.html` — 프론트엔드 (바닐라 JS, 빌드 불필요).
+- `static/index.html` — 프론트엔드 (바닐라 JS, 빌드 불필요, 단일 파일). 미니멀한 앱 셸 UI
+  (상단바/중앙 카드/하단 컨트롤), 라이트·다크 모드 자동 대응. 목표 문장을 브라우저 내장
+  Web Speech API로 읽어주는 "들어보기" 버튼 포함 (서버·API 키 불필요, 빈칸 채우기 항목에서는
+  정답이 그대로 들리므로 버튼을 숨김).
 
 ## 게임화 요소 (로그인 없음)
 
@@ -55,23 +59,53 @@ cp .env.example .env
 
 - `ANTHROPIC_API_KEY` — 설정하면 Claude 기반 채점으로 자동 전환.
 - `DEMO_TOKEN` — 설정하면 `/api/grade` 요청에 동일한 `token`이 없으면 401.
-  **외부에 공개할 때는 반드시 설정할 것** (안 그러면 아무나 CPU에 whisper job을 돌릴 수 있음).
-  프론트엔드는 URL에 `?token=값`을 한 번 붙여서 열면 그 값을 브라우저 localStorage에 저장해두고
-  이후 모든 요청에 자동으로 실어 보냅니다 — 즉 터널 URL을
-  `https://xxxx.trycloudflare.com/?token=값` 형태로 공유하면 됨.
+  **외부에 공개할 때는 반드시 설정할 것** — Tailscale Funnel은 tailnet 멤버십과 무관하게 URL을 아는
+  누구나 접근 가능한 완전 공개 상태라서, 이 토큰이 유일한 접근 제어입니다. 안 걸어두면 아무나 URL로
+  CPU에 whisper job을 무제한 돌릴 수 있음. 프론트엔드는 URL에 `?token=값`을 한 번 붙여서 열면 그
+  값을 브라우저 localStorage에 저장해두고 이후 모든 요청에 자동으로 실어 보냅니다 — 즉 공유용
+  링크를 `https://<주소>/?token=값` 형태로 한 번 전달하면 됨.
 - `WHISPER_MODEL_SIZE` — `tiny`/`base`/`small`(기본)/`medium`. `medium`은 인식이 더 정확할 수 있지만
   4코어 i3 CPU 기준 짧은 문장 하나에 약 14초가 걸려 데모용으로는 느립니다. 속도보다 정확도가
   급하지 않다면 시도해볼 수 있는 정도.
 
-## Cloudflare Tunnel로 외부 노출
+## Tailscale Funnel로 외부 노출
+
+처음엔 cloudflared 퀵 터널을 썼는데, 재시작할 때마다 URL이 랜덤으로 바뀌는 게 문제였습니다
+(북마크·공유 링크가 매번 깨짐). 지금은 **Tailscale Funnel**로 바꿔서 고정 URL을 씁니다.
 
 ```bash
-brew install cloudflared
-cloudflared tunnel --url http://localhost:8421
+brew install --cask tailscale-app   # 최초 1회, 설치 후 앱에서 로그인 필요
+tailscale set --hostname=speaking   # 기기 이름 지정 → URL에 반영됨
+tailscale funnel --bg --https=443 8421
 ```
 
-출력되는 `https://xxxx.trycloudflare.com` 주소가 외부 접근용 URL입니다 (임시 터널, 재시작마다 URL 바뀜).
-공개 전에 `DEMO_TOKEN`을 설정하고, 프론트엔드 요청에 해당 토큰을 넣도록 조정하세요.
+한 번만 해주면 되는 사전 준비:
+- Tailscale 관리 콘솔(`https://login.tailscale.com/admin/dns`)에서 **HTTPS Certificates** 활성화
+- 관리 콘솔의 **Access controls → JSON editor**에서 ACL 정책에 아래 추가 (Funnel 사용 권한 부여):
+  ```json
+  "nodeAttrs": [
+    { "target": ["autogroup:member"], "attr": ["funnel"] }
+  ]
+  ```
+
+이후 접근 주소는 `https://<hostname>.<tailnet 이름>.ts.net` 형태로 고정됩니다 (지금은
+`https://speaking.tail8d1c85.ts.net`). tailnet 이름 뒷부분은 무료 플랜에서는 직접 입력이 아니라
+관리 콘솔에서 제공하는 후보 중에서만 고를 수 있습니다.
+
+- **왜 ngrok이 아니라 Tailscale인지**: ngrok 무료 플랜은 방문자마다 "이 사이트는 ngrok을 통해
+  제공됩니다 - 계속 진행" 경고 페이지를 한 번 거치게 해서 피싱처럼 보일 수 있음. Tailscale Funnel은
+  그런 인터스티셜 없이 바로 연결됨.
+- 자기 자신(같은 tailnet에 속한 기기)에서 이 URL을 테스트하면 MagicDNS가 내부 IP로 바로 연결해버려서
+  진단이 꼬일 수 있습니다 — 외부 확인은 반드시 tailnet 밖의 기기(예: 다른 와이파이/LTE)로 하세요.
+
+### 재부팅해도 자동 시작
+
+- **서버(uvicorn)**: `~/Library/LaunchAgents/com.lavenderlabs.voicegrader.plist`로 launchd에 등록되어
+  있어서 로그인 시 자동 시작·크래시 시 자동 재시작됩니다. 코드를 바꾼 뒤에는
+  `launchctl unload ~/Library/LaunchAgents/com.lavenderlabs.voicegrader.plist && launchctl load -w ~/Library/LaunchAgents/com.lavenderlabs.voicegrader.plist`로
+  재시작하세요 (단, `static/index.html`은 정적 파일이라 재시작 없이 바로 반영됨).
+- **Funnel**: Tailscale 앱 자체가 로그인 항목으로 등록되어 있어서 재부팅 후 자동으로 다시
+  연결되고, `tailscale funnel` 설정은 tailscaled에 저장되어 있어 별도 재실행 없이 복원됩니다.
 
 ## 인식 정확도를 위해 적용한 것들
 

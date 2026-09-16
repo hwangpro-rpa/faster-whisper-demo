@@ -19,11 +19,13 @@
     --pen-blue-soft: #5872a1;
     --pen-red: #b5432f;
     --pen-green: #46693c;
+    --ink: #20262f;
     --ink-muted: #8a8171;
     --marker-yellow: rgba(255, 214, 92, 0.55);
     --marker-green: rgba(150, 199, 128, 0.45);
+    --highlighter: rgba(255, 224, 102, 0.65);
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     margin: 0;
@@ -48,7 +50,7 @@
       repeating-linear-gradient(to bottom, transparent 0 37px, var(--rule) 37px 38px);
     box-shadow: 0 24px 50px var(--desk-shadow), 0 2px 0 var(--paper-edge);
     border-radius: 3px;
-    padding: 34px 30px 30px 74px;
+    padding: 34px 30px 34px 74px;
     transform: rotate(-0.4deg);
     position: relative;
   }
@@ -60,7 +62,6 @@
     box-shadow: inset 0 0 40px rgba(60,45,20,0.06);
     pointer-events: none;
   }
-  .holes { display: none; }
 
   .kicker {
     font-size: 12px;
@@ -75,107 +76,119 @@
   h1 {
     font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
     font-size: 26px;
-    margin: 0 0 18px;
+    margin: 0 0 20px;
     color: var(--pen-blue);
   }
 
-  .item-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
+  .target-wrap { margin: 4px 0 26px; }
+  .target-hint {
+    font-size: 11.5px;
     color: var(--ink-muted);
+    letter-spacing: 0.03em;
     margin-bottom: 6px;
   }
-  select {
-    background: transparent;
-    color: var(--ink-muted);
-    border: none;
-    border-bottom: 1px dashed var(--ink-muted);
-    font-family: inherit;
-    font-size: 13px;
-    padding: 2px 4px;
-    cursor: pointer;
-    max-width: 60%;
-  }
-  select:focus { outline: none; color: var(--pen-blue); border-color: var(--pen-blue-soft); }
-
   .target-text {
-    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
+    display: inline;
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
     font-weight: 700;
-    font-size: 40px;
-    line-height: 1.3;
-    color: var(--pen-blue);
-    margin: 6px 0 18px;
+    font-size: 34px;
+    line-height: 1.5;
+    color: var(--ink);
     word-break: keep-all;
+    background: linear-gradient(transparent 62%, var(--highlighter) 62%);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
   }
 
-  .rec-row {
+  .practice-area {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 18px;
-    margin: 10px 0 6px;
+    padding: 6px 0 4px;
   }
-  .rec-btn {
-    flex: none;
-    width: 62px;
-    height: 62px;
+
+  .hold-wrap {
+    --progress: 0;
+    position: relative;
+    width: 108px;
+    height: 108px;
+  }
+  .hold-wrap::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
     border-radius: 50%;
-    border: 2px solid var(--pen-red);
+    background: conic-gradient(var(--pen-red) calc(var(--progress) * 360deg), transparent 0);
+  }
+  .hold-btn {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2.5px solid var(--pen-blue);
     background: var(--paper);
-    color: var(--pen-red);
+    color: var(--pen-blue);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    transition: transform 0.15s ease;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease;
   }
-  .rec-btn:active { transform: scale(0.94); }
-  .rec-btn .dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--pen-red);
-    transition: border-radius 0.15s ease, width 0.15s ease, height 0.15s ease;
+  .hold-btn svg { width: 34px; height: 34px; pointer-events: none; }
+  .hold-wrap.active .hold-btn {
+    transform: scale(1.08);
+    background: #eef2f8;
+    color: var(--pen-red);
+    border-color: var(--pen-red);
   }
-  .rec-btn.recording .dot { border-radius: 4px; width: 18px; height: 18px; }
-  .rec-btn.recording {
-    animation: pulse 1.4s ease-out infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(181,67,47,0.45); }
-    70% { box-shadow: 0 0 0 14px rgba(181,67,47,0); }
-    100% { box-shadow: 0 0 0 0 rgba(181,67,47,0); }
-  }
-  .rec-label {
-    font-size: 12px;
-    color: var(--ink-muted);
-    text-align: center;
-    margin-top: 6px;
-    width: 62px;
-  }
-  canvas#waveform {
-    flex: 1;
-    height: 44px;
-    width: 100%;
-  }
-  .next-link {
-    background: none;
-    border: none;
-    color: var(--pen-blue-soft);
-    font-family: inherit;
+  .hold-wrap.active .hold-btn svg { animation: micPulse 1s ease-in-out infinite; }
+  @keyframes micPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  .hold-label {
     font-size: 13px;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    cursor: pointer;
-    padding: 0;
-    margin-top: 14px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    text-align: center;
+    min-height: 18px;
   }
-  .next-link:hover { color: var(--pen-blue); }
+  .hold-wrap.active + .hold-label { color: var(--pen-red); }
+
+  canvas#waveform {
+    width: 100%;
+    max-width: 420px;
+    height: 40px;
+    margin-top: 6px;
+  }
+
+  .draw-btn {
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--paper-edge);
+    border: 1.5px dashed var(--pen-blue-soft);
+    color: var(--pen-blue);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .draw-btn:hover { background: #f1e9d2; transform: translateY(-1px); }
+  .draw-btn:active { transform: translateY(0) scale(0.96); }
+  .draw-btn .draw-icon { display: inline-block; transition: transform 0.4s ease; }
+  .draw-btn.spin .draw-icon { transform: rotate(360deg); }
 
   audio { width: 100%; margin-top: 14px; display: none; height: 32px; }
-  .status { font-size: 12.5px; color: var(--ink-muted); margin-top: 10px; min-height: 16px; }
+  .status { font-size: 12.5px; color: var(--ink-muted); margin-top: 10px; min-height: 16px; text-align: center; }
 
   .result {
     margin-top: 22px;
@@ -247,39 +260,43 @@
   }
 
   @media (max-width: 480px) {
-    .sheet { padding: 28px 18px 24px 44px; }
+    .sheet { padding: 28px 18px 28px 44px; }
     .sheet { background-image:
         linear-gradient(to right, transparent 0 24px, var(--margin) 24px 25.5px, transparent 25.5px),
         repeating-linear-gradient(to bottom, transparent 0 34px, var(--rule) 34px 35px);
     }
-    .target-text { font-size: 30px; }
+    .target-text { font-size: 26px; }
     .recognized { font-size: 21px; }
   }
 </style>
 </head>
 <body>
 <div class="sheet">
-  <div class="kicker"><span>말하기 연습장 <b>No. 1</b></span><span id="itemTag">-</span></div>
+  <div class="kicker"><span>말하기 연습장 <b id="pageNo">No. 1</b></span><span id="itemTag">-</span></div>
   <h1>오늘의 문장을 소리내어 읽어보세요</h1>
 
-  <div class="item-row">
-    <span>연습할 카드 고르기</span>
-    <select id="itemSelect"></select>
+  <div class="target-wrap">
+    <div class="target-hint">아래 내용을 큰 소리로 정확하게 읽어보세요</div>
+    <div class="target-text" id="targetText">불러오는 중...</div>
   </div>
 
-  <div class="target-text" id="targetText">불러오는 중...</div>
-
-  <div class="rec-row">
-    <div>
-      <button class="rec-btn" id="recordBtn" aria-label="녹음 시작"><span class="dot"></span></button>
-      <div class="rec-label" id="recLabel">녹음</div>
+  <div class="practice-area">
+    <div class="hold-wrap" id="holdWrap">
+      <button class="hold-btn" id="recordBtn" aria-label="누르고 있는 동안 녹음됩니다">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+          <path d="M5 10v1a7 7 0 0 0 14 0v-1"></path>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+          <line x1="8" y1="22" x2="16" y2="22"></line>
+        </svg>
+      </button>
     </div>
-    <canvas id="waveform" width="600" height="88"></canvas>
+    <div class="hold-label" id="holdLabel">누르고 있는 동안 녹음돼요</div>
+    <canvas id="waveform" width="420" height="80"></canvas>
+    <button class="draw-btn" id="nextBtn"><span class="draw-icon">🎲</span> 다른 카드 뽑기</button>
+    <audio id="playback" controls></audio>
+    <div class="status" id="status"></div>
   </div>
-  <button class="next-link" id="nextBtn">다음 카드로 넘기기 →</button>
-
-  <audio id="playback" controls></audio>
-  <div class="status" id="status"></div>
 
   <div class="result" id="resultCard">
     <div class="result-label">✎ 인식된 소리</div>
@@ -292,27 +309,37 @@
 
 <script>
 const API = "";
+const MAX_MS = 20000;
 let items = [];
 let currentItem = null;
+let drawCount = 0;
 let mediaRecorder = null;
 let chunks = [];
 let recording = false;
 let stopTimer = null;
 let audioCtx = null, analyser = null, sourceNode = null, rafId = null;
+let holdStartTime = 0;
 
 const el = (id) => document.getElementById(id);
 
 async function loadItems() {
   const res = await fetch(`${API}/api/items`);
   items = await res.json();
-  const sel = el("itemSelect");
-  sel.innerHTML = items.map((it, i) => `<option value="${i}">${it.language === "ko" ? "한국어" : "영어"} · ${it.level === "word" ? "단어" : "문장"} · ${it.text}</option>`).join("");
-  setItem(0);
+  drawRandomItem();
 }
 
-function setItem(idx) {
-  currentItem = items[idx];
-  el("itemSelect").value = idx;
+function drawRandomItem() {
+  let next = currentItem;
+  if (items.length > 1) {
+    while (!next || next.id === currentItem?.id) {
+      next = items[Math.floor(Math.random() * items.length)];
+    }
+  } else {
+    next = items[0];
+  }
+  currentItem = next;
+  drawCount += 1;
+  el("pageNo").textContent = `No. ${drawCount}`;
   el("itemTag").textContent = `${currentItem.language === "ko" ? "한국어" : "English"} · ${currentItem.level === "word" ? "단어" : "문장"}`;
   el("targetText").textContent = currentItem.text;
   el("resultCard").style.display = "none";
@@ -320,18 +347,10 @@ function setItem(idx) {
   el("status").textContent = "";
 }
 
-el("itemSelect").addEventListener("change", (e) => setItem(parseInt(e.target.value, 10)));
-el("nextBtn").addEventListener("click", () => {
-  const cur = parseInt(el("itemSelect").value, 10);
-  setItem((cur + 1) % items.length);
-});
-
-el("recordBtn").addEventListener("click", async () => {
-  if (recording) {
-    stopRecording();
-    return;
-  }
-  await startRecording();
+el("nextBtn").addEventListener("click", (e) => {
+  e.currentTarget.classList.add("spin");
+  setTimeout(() => e.currentTarget.classList.remove("spin"), 400);
+  drawRandomItem();
 });
 
 function setupVisualizer(stream) {
@@ -345,10 +364,15 @@ function setupVisualizer(stream) {
   const ctx = canvas.getContext("2d");
   const bufferLength = analyser.fftSize;
   const dataArray = new Uint8Array(bufferLength);
+  const holdWrap = el("holdWrap");
 
   function render() {
     if (!recording) return;
     rafId = requestAnimationFrame(render);
+
+    const elapsed = performance.now() - holdStartTime;
+    holdWrap.style.setProperty("--progress", Math.min(elapsed / MAX_MS, 1).toFixed(3));
+
     analyser.getByteTimeDomainData(dataArray);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2.5;
@@ -373,11 +397,12 @@ function teardownVisualizer() {
   if (sourceNode) { sourceNode.disconnect(); sourceNode = null; }
   if (audioCtx) { audioCtx.close(); audioCtx = null; }
   const canvas = el("waveform");
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  el("holdWrap").style.setProperty("--progress", 0);
 }
 
-async function startRecording() {
+async function beginHold() {
+  if (recording) return;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     chunks = [];
@@ -386,18 +411,18 @@ async function startRecording() {
     mediaRecorder.onstop = onRecordingStop;
     mediaRecorder.start();
     recording = true;
+    holdStartTime = performance.now();
     setupVisualizer(stream);
-    el("recordBtn").classList.add("recording");
-    el("recordBtn").setAttribute("aria-label", "녹음 중지");
-    el("recLabel").textContent = "중지";
-    el("status").textContent = "녹음 중... (최대 20초)";
-    stopTimer = setTimeout(() => stopRecording(), 20000);
+    el("holdWrap").classList.add("active");
+    el("holdLabel").textContent = "듣고 있어요… 다 읽으면 손을 떼세요";
+    el("status").textContent = "";
+    stopTimer = setTimeout(() => endHold(), MAX_MS);
   } catch (err) {
     el("status").textContent = "마이크 접근 권한이 필요합니다: " + err.message;
   }
 }
 
-function stopRecording() {
+function endHold() {
   if (stopTimer) clearTimeout(stopTimer);
   if (mediaRecorder && recording) {
     mediaRecorder.stop();
@@ -405,17 +430,29 @@ function stopRecording() {
   }
   recording = false;
   teardownVisualizer();
-  el("recordBtn").classList.remove("recording");
-  el("recordBtn").setAttribute("aria-label", "녹음 시작");
-  el("recLabel").textContent = "녹음";
+  el("holdWrap").classList.remove("active");
+  el("holdLabel").textContent = "누르고 있는 동안 녹음돼요";
 }
+
+const recordBtn = el("recordBtn");
+recordBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); beginHold(); });
+recordBtn.addEventListener("contextmenu", (e) => e.preventDefault());
+window.addEventListener("pointerup", () => { if (recording) endHold(); });
+window.addEventListener("pointercancel", () => { if (recording) endHold(); });
+recordBtn.addEventListener("keydown", (e) => {
+  if ((e.code === "Space" || e.code === "Enter") && !e.repeat) { e.preventDefault(); beginHold(); }
+});
+recordBtn.addEventListener("keyup", (e) => {
+  if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); endHold(); }
+});
 
 async function onRecordingStop() {
   const blob = new Blob(chunks, { type: "audio/webm" });
   const url = URL.createObjectURL(blob);
   el("playback").src = url;
   el("playback").style.display = "block";
-  el("status").textContent = "채점 중...";
+  el("holdLabel").textContent = "채점 중…";
+  el("status").textContent = "";
 
   const form = new FormData();
   form.append("item_id", currentItem.id);
@@ -426,9 +463,10 @@ async function onRecordingStop() {
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     showResult(data);
-    el("status").textContent = "";
   } catch (err) {
     el("status").textContent = "채점 실패: " + err.message;
+  } finally {
+    el("holdLabel").textContent = "누르고 있는 동안 녹음돼요";
   }
 }
 

@@ -14,6 +14,7 @@ from faster_whisper import WhisperModel
 from .audio_prep import load_and_clean_audio
 from .grader import get_grader
 from .items import get_item, get_items, hotwords_for
+from .progress import get_profile, record_attempt
 
 load_dotenv()
 
@@ -51,12 +52,34 @@ def _check_token(token: str | None):
         raise HTTPException(status_code=401, detail="invalid or missing token")
 
 
+def _valid_device_id(device_id: str | None) -> str | None:
+    if device_id and 1 <= len(device_id) <= 64:
+        return device_id
+    return None
+
+
 @app.get("/api/items")
 def list_items():
     return [
-        {"id": item.id, "language": item.language, "text": item.text, "level": item.level}
+        {
+            "id": item.id,
+            "language": item.language,
+            "text": item.text,
+            "level": item.level,
+            "unlock_level": item.unlock_level,
+            "mode": item.mode,
+            "blank_index": item.blank_index,
+        }
         for item in get_items()
     ]
+
+
+@app.get("/api/profile")
+def profile(device_id: str):
+    device_id = _valid_device_id(device_id)
+    if device_id is None:
+        raise HTTPException(status_code=400, detail="invalid device_id")
+    return dataclasses.asdict(get_profile(device_id))
 
 
 @app.post("/api/grade")
@@ -64,8 +87,10 @@ async def grade(
     item_id: str = Form(...),
     audio: UploadFile = File(...),
     token: str | None = Form(default=None),
+    device_id: str | None = Form(default=None),
 ):
     _check_token(token)
+    device_id = _valid_device_id(device_id)
 
     item = get_item(item_id)
     if item is None:
@@ -96,6 +121,15 @@ async def grade(
     grader = get_grader()
     result = grader.grade(item.text, recognized_text, item.language, speech_ratio=speech_ratio, level=item.level)
 
+    new_profile = None
+    if device_id:
+        before = get_profile(device_id)
+        record_attempt(device_id, item.id, result.scores.overall, result.correct)
+        after = get_profile(device_id)
+        new_profile = dataclasses.asdict(after)
+        new_profile["new_stamp"] = item.id not in before.stamps and item.id in after.stamps
+        new_profile["leveled_up"] = after.level > before.level
+
     return {
         "item_id": item.id,
         "target_text": item.text,
@@ -105,6 +139,7 @@ async def grade(
         "feedback": result.feedback,
         "grader": result.provider,
         "scores": dataclasses.asdict(result.scores),
+        "profile": new_profile,
     }
 
 

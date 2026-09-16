@@ -9,9 +9,28 @@ STT(faster-whisper, CPU) + 규칙 기반 발음 채점 데모. 단어/문장(한
 - `app/grader.py` — 채점 로직. `Grader` 인터페이스에 `HeuristicGrader`(규칙 기반, API 불필요)와
   `ClaudeGrader`(Anthropic API)가 있음. `ANTHROPIC_API_KEY` 환경변수가 있으면 자동으로
   `ClaudeGrader`로 전환됩니다 (`get_grader()`).
-- `app/items.py` — 데모용 단어/문장 목록. `hotwords_for(language)`가 인식 정확도를 위한 어휘 힌트도 만듦.
+- `app/items.py` — 데모용 단어/문장 목록. `unlock_level`(난이도 잠금), `mode`/`blank_index`(빈칸 채우기),
+  `hotwords_for(language)`(인식 정확도용 어휘 힌트)를 가짐.
 - `app/audio_prep.py` — 인식 전 오디오 정규화(피크 노멀라이즈).
+- `app/progress.py` — 기기 단위(로그인 없음) XP·레벨·도장 진행도. SQLite 파일(`voicegrader.db`,
+  git에는 안 올라감) 하나로 저장.
 - `static/index.html` — 프론트엔드 (바닐라 JS, 빌드 불필요).
+
+## 게임화 요소 (로그인 없음)
+
+- **기기 식별**: 서버에 계정이 없습니다. 프론트엔드가 최초 접속 시 `crypto.randomUUID()`로 만든
+  ID를 localStorage에 저장하고, 매 채점 요청마다 `device_id`로 같이 보냅니다. 브라우저 저장소를
+  지우면 그 기기의 진행도는 사라집니다 (의도된 트레이드오프).
+- **XP·레벨**: 점수(`overall`)를 10으로 나눈 값을 XP로 적립, 20XP마다 레벨업 (`app/progress.py`의
+  `XP_PER_LEVEL` 상수로 조정 가능). 레벨에 따라 캐릭터가 진화합니다: 🥚 → 🐣 → 🐤 → 🦜(레벨6, "말을
+  따라하는 새") → 🦉(레벨8, 마스터).
+- **도장**: 항목별로 점수 80점 이상을 한 번이라도 받으면 그 항목의 도장 획득. 화면 하단 도장판에
+  누적 표시.
+- **난이도 잠금**: 각 항목에 `unlock_level`이 있어서, 레벨이 낮으면 단어만 뽑히고 레벨이 오르면
+  짧은 문장 → 긴 문장 순으로 풀에 추가됩니다.
+- **빈칸 채우기**: 일부 문장 항목은 `mode: "fill_blank"`로 지정돼 있어서, 화면엔 한 단어가
+  "_____"로 가려진 채 나오고 학습자는 빈칸을 채워서 문장 전체를 말합니다. 채점은 서버에 저장된
+  원문 전체와 비교하므로 별도 로직 없이 기존 채점 파이프라인을 그대로 씁니다.
 
 ## 실행
 

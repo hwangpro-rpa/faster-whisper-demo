@@ -48,7 +48,11 @@ def _compute_scores(
 ) -> Scores:
     total = len(target_words)
     matched = sum(1 for op in diff_ops if op["op"] == "equal")
-    accuracy = round(100 * matched / total) if total else 0
+    # Denominator is the aligned slot count (diff_ops), not just target word
+    # count, so extra/inserted words that don't belong (e.g. noise picked up
+    # as "light to" instead of "light") pull accuracy down instead of being
+    # ignored just because every target word still happened to match.
+    accuracy = round(100 * matched / len(diff_ops)) if diff_ops else 0
     completeness = round(min(100, 100 * len(recognized_words) / total)) if total else 0
 
     char_similarity = round(

@@ -73,6 +73,92 @@
     margin-bottom: 2px;
   }
   .kicker b { color: var(--pen-blue); font-weight: 700; }
+
+  .profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 4px 0 14px;
+    background: var(--paper-edge);
+    border-radius: 10px;
+  }
+  .char-emoji { font-size: 26px; line-height: 1; }
+  .profile-info { flex: 1; min-width: 0; }
+  .profile-level {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pen-blue);
+    margin-bottom: 3px;
+  }
+  .xp-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(94,128,171,0.2);
+    overflow: hidden;
+  }
+  .xp-fill {
+    height: 100%;
+    background: var(--pen-blue-soft);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  .stamp-count {
+    flex: none;
+    font-size: 12px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  .stamp-book {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(94,128,171,0.4);
+  }
+  .stamp-chip {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border: 1.5px dashed rgba(138,129,113,0.5);
+    color: var(--ink-muted);
+  }
+  .stamp-chip.earned {
+    border-style: solid;
+    border-color: var(--pen-red);
+    color: var(--pen-red);
+    background: rgba(181,67,47,0.08);
+  }
+
+  .blank-tag {
+    font-size: 10.5px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--marker-yellow);
+    color: #5a4a1a;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .level-banner {
+    display: none;
+    font-family: "Gaegu", sans-serif;
+    font-size: 15px;
+    color: var(--pen-red);
+    background: var(--marker-yellow);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .level-banner.show { display: block; }
   h1 {
     font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
     font-size: 26px;
@@ -365,8 +451,17 @@
   <div class="kicker"><span>말하기 연습장 <b id="pageNo">No. 1</b></span><span id="itemTag">-</span></div>
   <h1>오늘의 문장을 소리내어 읽어보세요</h1>
 
+  <div class="profile-bar">
+    <span class="char-emoji" id="charEmoji">🥚</span>
+    <div class="profile-info">
+      <div class="profile-level">Lv.<span id="charLevel">1</span> <span id="charName">알</span></div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+    <div class="stamp-count" id="stampCount">🎫 0/0</div>
+  </div>
+
   <div class="target-wrap">
-    <div class="target-hint">아래 내용을 큰 소리로 정확하게 읽어보세요</div>
+    <div class="target-hint">아래 내용을 큰 소리로 정확하게 읽어보세요 <span class="blank-tag" id="blankTag" style="display:none">빈칸을 채워서 전체를 말해보세요</span></div>
     <div class="target-text" id="targetText">불러오는 중...</div>
   </div>
 
@@ -386,11 +481,14 @@
     <button class="draw-btn" id="nextBtn"><span class="draw-icon">🎲</span> 다른 카드 뽑기</button>
     <div class="status" id="status"></div>
   </div>
+
+  <div class="stamp-book" id="stampBook"></div>
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal-card" id="modalCard">
     <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+    <div class="level-banner" id="levelBanner"></div>
     <div class="result-label">✎ 인식된 소리</div>
     <div class="recognized" id="recognizedText"></div>
     <div class="score-row">
@@ -424,9 +522,24 @@ const TOKEN_KEY = "voiceGraderToken";
 function getToken() {
   try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; }
 }
+
+const DEVICE_KEY = "voiceGraderDeviceId";
+function getDeviceId() {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : `dev-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch (e) { return null; }
+}
+const deviceId = getDeviceId();
+
 let items = [];
 let currentItem = null;
 let drawCount = 0;
+let profile = { level: 1, total_xp: 0, xp_into_level: 0, xp_for_next_level: 20, stamps: [], character_emoji: "🥚", character_name: "알" };
 let mediaRecorder = null;
 let chunks = [];
 let recording = false;
@@ -437,25 +550,69 @@ let holdStartTime = 0;
 const el = (id) => document.getElementById(id);
 
 async function loadItems() {
-  const res = await fetch(`${API}/api/items`);
-  items = await res.json();
+  const [itemsRes] = await Promise.all([fetch(`${API}/api/items`), fetchProfile()]);
+  items = await itemsRes.json();
+  renderProfileBar();
+  renderStampBook();
   drawRandomItem();
 }
 
+async function fetchProfile() {
+  if (!deviceId) return;
+  try {
+    const res = await fetch(`${API}/api/profile?device_id=${encodeURIComponent(deviceId)}`);
+    if (res.ok) profile = await res.json();
+  } catch (e) { /* offline or first run; keep default profile */ }
+}
+
+function renderProfileBar() {
+  el("charEmoji").textContent = profile.character_emoji;
+  el("charLevel").textContent = profile.level;
+  el("charName").textContent = profile.character_name;
+  const pct = Math.round((profile.xp_into_level / profile.xp_for_next_level) * 100);
+  el("xpFill").style.width = `${pct}%`;
+  el("stampCount").textContent = `🎫 ${profile.stamps.length}/${items.length || "-"}`;
+}
+
+function renderStampBook() {
+  el("stampBook").innerHTML = items
+    .map((it) => {
+      const earned = profile.stamps.includes(it.id);
+      return `<span class="stamp-chip ${earned ? "earned" : ""}" title="${escapeHtml(it.text)}">${earned ? "✓" : "?"}</span>`;
+    })
+    .join("");
+}
+
+function unlockedPool() {
+  const pool = items.filter((it) => it.unlock_level <= profile.level);
+  return pool.length ? pool : items;
+}
+
+function displayTextFor(item) {
+  if (item.mode === "fill_blank" && item.blank_index != null) {
+    const words = item.text.split(" ");
+    words[item.blank_index] = "_____";
+    return words.join(" ");
+  }
+  return item.text;
+}
+
 function drawRandomItem() {
+  const pool = unlockedPool();
   let next = currentItem;
-  if (items.length > 1) {
+  if (pool.length > 1) {
     while (!next || next.id === currentItem?.id) {
-      next = items[Math.floor(Math.random() * items.length)];
+      next = pool[Math.floor(Math.random() * pool.length)];
     }
   } else {
-    next = items[0];
+    next = pool[0];
   }
   currentItem = next;
   drawCount += 1;
   el("pageNo").textContent = `No. ${drawCount}`;
   el("itemTag").textContent = `${currentItem.language === "ko" ? "한국어" : "English"} · ${currentItem.level === "word" ? "단어" : "문장"}`;
-  el("targetText").textContent = currentItem.text;
+  el("targetText").textContent = displayTextFor(currentItem);
+  el("blankTag").style.display = currentItem.mode === "fill_blank" ? "inline-block" : "none";
   el("playback").style.display = "none";
   el("status").textContent = "";
   closeModal();
@@ -600,6 +757,7 @@ async function onRecordingStop() {
   form.append("audio", blob, `recording.${ext}`);
   const token = getToken();
   if (token) form.append("token", token);
+  if (deviceId) form.append("device_id", deviceId);
 
   try {
     const res = await fetch(`${API}/api/grade`, { method: "POST", body: form });
@@ -638,6 +796,22 @@ function showResult(data) {
 
   el("feedback").textContent = data.feedback;
   el("graderBadge").textContent = `grader: ${data.grader}`;
+
+  const banner = el("levelBanner");
+  banner.className = "level-banner";
+  if (data.profile) {
+    profile = data.profile;
+    renderProfileBar();
+    renderStampBook();
+    const messages = [];
+    if (data.profile.leveled_up) messages.push(`🎉 레벨 업! Lv.${profile.level} ${profile.character_name}(으)로 진화!`);
+    if (data.profile.new_stamp) messages.push("🎫 새 도장 획득!");
+    if (messages.length) {
+      banner.textContent = messages.join(" ");
+      banner.classList.add("show");
+    }
+  }
+
   openModal();
 }
 

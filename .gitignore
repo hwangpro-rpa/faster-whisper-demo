@@ -12,3 +12,4 @@ recordings/
 whisper_cache/
 *.crt
 *.key
+voicegrader.db

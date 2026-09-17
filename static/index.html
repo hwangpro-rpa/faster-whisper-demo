@@ -281,7 +281,10 @@
     border-radius: 14px;
     background: var(--accent-soft);
     color: var(--accent-strong);
+    border: none;
+    font: inherit;
     text-decoration: none;
+    cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .site-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
@@ -300,7 +303,38 @@
   .site-banner-text { flex: 1; min-width: 0; text-align: left; }
   .site-banner-kicker { font-size: 10px; font-weight: 600; opacity: 0.75; }
   .site-banner-title { font-size: 13px; font-weight: 700; }
-  .site-banner-arrow { flex: none; font-size: 15px; }
+  .site-banner-arrow { flex: none; font-size: 15px; transition: transform 0.2s ease; }
+  .site-banner[aria-expanded="true"] .site-banner-arrow { transform: rotate(90deg); }
+
+  /* ---------- sites sheet ---------- */
+  .site-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
+  .site-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+  }
+  .site-row:hover { background: var(--surface-2); }
+  .site-row:active { transform: scale(0.98); }
+  .site-row-icon {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .site-row-text { flex: 1; min-width: 0; }
+  .site-row-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .site-row-desc { font-size: 11.5px; color: var(--text-faint); margin-top: 1px; }
+  .site-row-go { flex: none; color: var(--text-faint); font-size: 15px; }
 
   /* ---------- bottom sheets ---------- */
   .sheet-backdrop {
@@ -550,14 +584,14 @@
       <span>다른 카드 뽑기</span>
     </button>
     <div class="status" id="status"></div>
-    <a class="site-banner" href="https://k-line-daily.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">
-      <span class="site-banner-icon">📈</span>
+    <button class="site-banner" id="sitesToggle" type="button" aria-expanded="false" aria-controls="sitesSheet">
+      <span class="site-banner-icon">🧭</span>
       <span class="site-banner-text">
-        <span class="site-banner-kicker">다른 프로젝트도 구경해보세요</span>
-        <span class="site-banner-title">k-line-daily</span>
+        <span class="site-banner-kicker">만든 미니 사이트 모아보기</span>
+        <span class="site-banner-title">둘러보기</span>
       </span>
       <span class="site-banner-arrow">→</span>
-    </a>
+    </button>
   </footer>
 
   <div class="sheet-backdrop" id="statsBackdrop">
@@ -571,6 +605,64 @@
       </div>
       <div class="stats-badges-header"><span>달성 배지</span><span class="stamp-count" id="stampCount">0/0</span></div>
       <div class="stamp-book" id="stampBook"></div>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="sitesBackdrop">
+    <div class="sheet sites-sheet" id="sitesSheet" role="dialog" aria-label="다른 미니 사이트">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" id="sitesClose" aria-label="닫기">✕</button>
+      <div class="stats-badges-header"><span>만든 미니 사이트</span></div>
+      <div class="site-list">
+        <a class="site-row" href="https://k-line-daily.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">
+          <span class="site-row-icon">🇰🇷</span>
+          <span class="site-row-text">
+            <span class="site-row-title">오늘의 K-한마디</span>
+            <span class="site-row-desc">K-드라마·아이돌로 배우는 한국어 한마디</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+        <a class="site-row" href="https://admitlab.hwangpro-rpa.workers.dev" target="_blank" rel="noopener">
+          <span class="site-row-icon">🎓</span>
+          <span class="site-row-text">
+            <span class="site-row-title">AdmitLab</span>
+            <span class="site-row-desc">실제 대입 요강 기반 합격 예측 데모</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+        <a class="site-row" href="https://hwangpro-rpa.github.io/money-ledger-kr/" target="_blank" rel="noopener">
+          <span class="site-row-icon">💰</span>
+          <span class="site-row-text">
+            <span class="site-row-title">생활 재테크 장부</span>
+            <span class="site-row-desc">연봉·대출·적금·퇴직금 계산기 모음</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+        <a class="site-row" href="https://hwangpro-rpa.github.io/rooftop/" target="_blank" rel="noopener">
+          <span class="site-row-icon">☀️</span>
+          <span class="site-row-text">
+            <span class="site-row-title">지붕형 태양광 후보 발굴</span>
+            <span class="site-row-desc">옥상 태양광 설치 후보지 찾기</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+        <a class="site-row" href="https://emojidle.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">
+          <span class="site-row-icon">🎮</span>
+          <span class="site-row-text">
+            <span class="site-row-title">Emojidle</span>
+            <span class="site-row-desc">흐릿한 이모지 보고 단어 맞추기</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+        <a class="site-row" href="https://hwp2latex.pages.dev" target="_blank" rel="noopener">
+          <span class="site-row-icon">📄</span>
+          <span class="site-row-text">
+            <span class="site-row-title">HWP to LaTeX</span>
+            <span class="site-row-desc">한글 문서를 LaTeX로 변환</span>
+          </span>
+          <span class="site-row-go">↗</span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -769,8 +861,14 @@ el("profileChip").addEventListener("click", openStats);
 el("statsClose").addEventListener("click", closeStats);
 el("statsBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeStats(); });
 
+function openSites() { el("sitesBackdrop").classList.add("open"); el("sitesToggle").setAttribute("aria-expanded", "true"); }
+function closeSites() { el("sitesBackdrop").classList.remove("open"); el("sitesToggle").setAttribute("aria-expanded", "false"); }
+el("sitesToggle").addEventListener("click", openSites);
+el("sitesClose").addEventListener("click", closeSites);
+el("sitesBackdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeSites(); });
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { closeModal(); closeStats(); }
+  if (e.key === "Escape") { closeModal(); closeStats(); closeSites(); }
 });
 
 function setupVisualizer(stream) {

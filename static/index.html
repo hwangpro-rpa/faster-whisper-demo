@@ -270,6 +270,13 @@
   .draw-btn.spin .draw-icon { transform: rotate(180deg); }
 
   .status { font-size: 12px; color: var(--danger); margin-top: 8px; min-height: 15px; text-align: center; }
+  .site-link {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-faint);
+    text-decoration: none;
+  }
+  .site-link:hover { color: var(--text-muted); text-decoration: underline; }
 
   /* ---------- bottom sheets ---------- */
   .sheet-backdrop {
@@ -519,6 +526,7 @@
       <span>다른 카드 뽑기</span>
     </button>
     <div class="status" id="status"></div>
+    <a class="site-link" href="https://k-line-daily.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">k-line-daily →</a>
   </footer>
 
   <div class="sheet-backdrop" id="statsBackdrop">

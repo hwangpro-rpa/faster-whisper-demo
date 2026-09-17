@@ -270,13 +270,37 @@
   .draw-btn.spin .draw-icon { transform: rotate(180deg); }
 
   .status { font-size: 12px; color: var(--danger); margin-top: 8px; min-height: 15px; text-align: center; }
-  .site-link {
-    margin-top: 10px;
-    font-size: 11px;
-    color: var(--text-faint);
+  .site-banner {
+    margin-top: 12px;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
     text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .site-link:hover { color: var(--text-muted); text-decoration: underline; }
+  .site-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+  .site-banner:active { transform: translateY(0) scale(0.98); }
+  .site-banner-icon {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+  .site-banner-text { flex: 1; min-width: 0; text-align: left; }
+  .site-banner-kicker { font-size: 10px; font-weight: 600; opacity: 0.75; }
+  .site-banner-title { font-size: 13px; font-weight: 700; }
+  .site-banner-arrow { flex: none; font-size: 15px; }
 
   /* ---------- bottom sheets ---------- */
   .sheet-backdrop {
@@ -526,7 +550,14 @@
       <span>다른 카드 뽑기</span>
     </button>
     <div class="status" id="status"></div>
-    <a class="site-link" href="https://k-line-daily.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">k-line-daily →</a>
+    <a class="site-banner" href="https://k-line-daily.hwangpro-rpa.workers.dev/" target="_blank" rel="noopener">
+      <span class="site-banner-icon">📈</span>
+      <span class="site-banner-text">
+        <span class="site-banner-kicker">다른 프로젝트도 구경해보세요</span>
+        <span class="site-banner-title">k-line-daily</span>
+      </span>
+      <span class="site-banner-arrow">→</span>
+    </a>
   </footer>
 
   <div class="sheet-backdrop" id="statsBackdrop">
